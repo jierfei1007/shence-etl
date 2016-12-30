@@ -154,7 +154,9 @@ object ShenCeETLMain {
       val cep = iterator.next()
       var map = cep._3
       SendMsgToShence.translate(map)
-      SendMsgToShence.writeLog(sa,map)
+      val distinct_id:String  = map.getOrDefault("EnterpriseID","0").toString
+      val eventName:String  = map.getOrDefault("EventValue", "CEP_").toString
+      SendMsgToShence.writeLog(sa,distinct_id,eventName,map)
     }
     sa.flush()
     sa.shutdown()

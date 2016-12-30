@@ -100,32 +100,24 @@ public class SendMsgToShence {
       }
     }
   }
-  /**
-   * <p>发送map到神测</p>
-   * @param sa
-   * @param jsonMap
-   * @throws Exception
-   */
-  public static void writeLog(SensorsAnalytics sa,Map<String,Object> jsonMap){
-    String distinct_id = jsonMap.getOrDefault("EnterpriseID","0").toString();
-    String eventName = jsonMap.getOrDefault("EventValue", "CEP_").toString();
-//    Map<String,Object> newMap=new HashMap();
-//    jsonMap.forEach((k,v)->{
-//      if(k.equals("$time")){
-//        newMap.put(k,new Date(Long.parseLong(v)));
-//      }else if(k.equals("Platform")
-//              ||k.equals("ServiceType")
-//              ||k.equals("Duration")
-//              || k.equals("EnterpriseID")
-//              || k.equals("UserID")){
-//        newMap.put(k,Integer.parseInt(v));
-//      } else {
-//        if(null==v){
-//          v="";
-//        }
-//        newMap.put(k, v);
-//      }
-//    });
+
+  public static void translateOpenApi(Map<String, Object> data) {
+    data.put("$time", data.getOrDefault("Time",new Date()));
+    data.remove("Time");
+    String key;
+    Set<String> keySet = new HashSet();
+    keySet.addAll(data.keySet());
+    for (String ele : keySet) {
+      key = ele.toLowerCase();
+      if (shenceReservedWords.contains(key)) {
+        data.put("__" + ele, data.get(ele));
+        data.remove(ele);
+      }
+    }
+  }
+  public static void writeLogOpenApi(SensorsAnalytics sa,Map<String,Object> jsonMap){
+    String distinct_id = jsonMap.getOrDefault("openapi_enterprise_id","0").toString();
+    String eventName = jsonMap.getOrDefault("openapi_action", "click").toString();
     try {
       sa.track(distinct_id, eventName, jsonMap);
     }catch(Exception e){
@@ -133,4 +125,20 @@ public class SendMsgToShence {
     }
   }
 
+  /**
+   * <p>发送map到神测</p>
+   * @param sa
+   * @param jsonMap
+   * @throws Exception
+   */
+  public static void writeLog(SensorsAnalytics sa,String distinct_id,String eventName,Map<String,Object> jsonMap){
+//    String distinct_id = jsonMap.getOrDefault("EnterpriseID","0").toString();
+//    String eventName = jsonMap.getOrDefault("EventValue", "CEP_").toString();
+
+ try {
+    sa.track(distinct_id, eventName, jsonMap);
+  }catch(Exception e){
+    throw new RuntimeException("writeLog error:"+jsonMap+"; errormsg="+e.getMessage());
+  }
+}
 }
