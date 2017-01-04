@@ -51,7 +51,7 @@ object ShenCeOpenApiMain {
     val hiveContext: HiveContext = new HiveContext(sparkContext)
     //创建api
     val openApiDF=OpenApiSource.getOpenAPIDF(hiveContext,dt,hr)
-    val cepServerActionBean: RDD[Tuple3[Int,String,JMap[String,Object]]] = openApiDF.map(row => {
+    val openapirdd: RDD[Tuple3[Int,String,JMap[String,Object]]] = openApiDF.map(row => {
       val map= new util.HashMap[String,Object]()
       val eid = row.getInt(0)
       val elapse = row.getString(1)
@@ -74,7 +74,7 @@ object ShenCeOpenApiMain {
       (eid,action,map)
     })
     //save to shence
-    cepServerActionBean.foreachPartition(itor=>sendLogToShence(itor))
+    openapirdd.foreachPartition(itor=>sendLogToShence(itor))
     sparkContext.stop()
   }
 

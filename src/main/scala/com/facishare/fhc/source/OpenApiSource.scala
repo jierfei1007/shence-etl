@@ -28,7 +28,7 @@ object OpenApiSource {
       "          interface," +
       "          action, " +
       "          `_time` " +
-      "  FROM  dw_bds_b.b_openapi_click where dt='"+dt+"' and hr='"+hr+"' and enterprise_account<>'')as open"+
+      "  FROM  dw_bds_b.b_openapi_click where dt='"+dt+"' and hr='"+hr+"')as open"+
       "  left join"+
       " (SELECT distinct enterprise_id,enterprise_account"+
       "  FROM dw_dim.dim_pub_enterprise_info_static WHERE  sk_begin_date <= '"+dt+"' AND sk_end_date >= '"+dt+"' and run_status =2) as static"+
