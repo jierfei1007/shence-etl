@@ -34,78 +34,7 @@ class TestStr extends TestCase {
       uri = uri.substring(1)
     }
     val action_array: Array[String] = uri.split('/')
-//    if (action_array.size < 5) {
-//      val first_action = action_array(0)
-//      first_action.toUpperCase match {
-//        case "A" => {
-//          if (action_array.size > 3) {
-//            event_value = CEP + action_array(0) + "_" + action_array(1) + "_" + action_array(2)
-//            lastActionName = action_array(action_array.size - 1)
-//          } else {
-//            event_value = CEP + action_array.mkString("_")
-//          }
-//        }
-//        case "H" => {
-//          println("first H")
-//          if (action_array.size > 2) {
-//            event_value = CEP + action_array(0) + "_" + action_array(1)
-//            lastActionName = action_array(action_array.size - 1)
-//          } else {
-//            event_value = CEP + action_array.mkString("_")
-//          }
-//        }
-//        case "FHH" => {
-//          println("first FHH")
-//          if (action_array.size > 3) {
-//            event_value = CEP + action_array(0) + "_" + action_array(1)
-//            firstActionName =event_value + "_" + action_array(2)
-//            lastActionName = action_array(action_array.size - 1)
-//          } else {
-//            event_value = CEP + action_array.mkString("_")
-//          }
-//        }
-//        case "FHE" => {
-//          println("first FHE")
-//          if (action_array.size > 3) {
-//            event_value = CEP + action_array(0) + "_" + action_array(1)
-//            firstActionName = event_value + "_" + action_array(2)
-//            lastActionName = action_array(action_array.size - 1)
-//          } else {
-//            event_value = CEP + action_array.mkString("_")
-//          }
-//        }
-//        case "FRL" => {
-//          println("first FRL")
-//          if (action_array.size > 3) {
-//            event_value = CEP + action_array(0) + "_" + action_array(1)
-//            firstActionName = event_value + "_" + action_array(2)
-//            lastActionName = action_array(action_array.size - 1)
-//          } else {
-//            event_value = CEP + action_array.mkString("_")
-//          }
-//        }
-//        case "XV" => {
-//          println("first XV")
-//          if (action_array.size > 2) {
-//            event_value = CEP + action_array(0) + "_" + action_array(1)
-//            lastActionName = action_array(action_array.size - 1)
-//          } else {
-//            event_value = CEP + action_array.mkString("_")
-//          }
-//        }
-//        case _ => {
-//          println("first others")
-//          event_value = CEP + action_array.mkString("_")
-//        }
-//      }
-//    } else {
-//      event_value = CEP + action_array(0) + "_" + action_array(1)
-//      firstActionName = event_value + "_" + action_array(2)
-//      secondActionName = firstActionName + "_" + action_array(3)
-//      lastActionName = action_array(action_array.size - 1)
-//    }
-//    val actions = (event_value, firstActionName, secondActionName, lastActionName)
-//    println(actions.toString)
+
     println(mkevents(action_array))
 
   }

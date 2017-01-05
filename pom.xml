@@ -6,7 +6,7 @@
 
     <groupId>com.facishare.fhc</groupId>
     <artifactId>fhc-shence-etl</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.2-SNAPSHOT</version>
 
     <properties>
         <scala.version>2.10.5</scala.version>
@@ -32,6 +32,7 @@
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
             <version>${scala.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -49,6 +50,12 @@
             <groupId>com.facishare.fs.cloud</groupId>
             <artifactId>fhc-spark-util</artifactId>
             <version>1.1-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.hbase</groupId>
+                    <artifactId>hbase-client</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>

@@ -23,15 +23,20 @@ import java.util.Set;
  * Created by jief on 2016/12/22.
  */
 public class SendMsgToShence {
-  public static Set<String> shenceReservedWords = new HashSet();
+  public static Set<String> shenceReservedWords = new HashSet<String>();
   public static final String confMeta = "shence-config";
-  private static Map<String, String> provMap = new HashMap();
+  private static Map<String, String> provMap = new HashMap<String, String>();
   private static String dataDir;
   private static String dbUrl;
   private static String dbUser;
   private static String dbPasswd;
   private static String db;
   private static String dbTable;
+
+  private static String sc_url;
+  private static int batch_size=200;
+  private static Map<String,SensorsAnalytics> samap=new HashMap<String,SensorsAnalytics>();
+  private static Object lock=new Object();
 
   static {
     System.setProperty("spring.profiles.active", "foneshare");
@@ -45,8 +50,26 @@ public class SendMsgToShence {
       dbPasswd=e.get("dbPasswd");
       db=e.get("db");
       dbTable=e.get("dbTable");
+      sc_url=e.get("sc_url");
+      batch_size=e.getInt("batch_size");
     });
   }
+
+  /**
+   * <p>根据工程名获取链接</p>
+   * @param projectName 工程名
+   * @return
+   */
+  public static synchronized SensorsAnalytics getSA(String projectName){
+    SensorsAnalytics sa=samap.get(projectName);
+    if(null==sa){
+      sa = new SensorsAnalytics(new SensorsAnalytics.BatchConsumer(sc_url+"?"+"project="+projectName, batch_size));
+      samap.put(projectName,sa);
+      return sa;
+    }
+    return sa;
+  }
+
   public static void setProvInfo(){
     Connection conn;
     Statement stat;
@@ -115,6 +138,7 @@ public class SendMsgToShence {
       }
     }
   }
+
   public static void writeLogOpenApi(SensorsAnalytics sa,Map<String,Object> jsonMap){
     String distinct_id = jsonMap.getOrDefault("openapi_enterprise_id","0").toString();
     String eventName = jsonMap.getOrDefault("openapi_action", "click").toString();
@@ -132,10 +156,7 @@ public class SendMsgToShence {
    * @throws Exception
    */
   public static void writeLog(SensorsAnalytics sa,String distinct_id,String eventName,Map<String,Object> jsonMap){
-//    String distinct_id = jsonMap.getOrDefault("EnterpriseID","0").toString();
-//    String eventName = jsonMap.getOrDefault("EventValue", "CEP_").toString();
-
- try {
+    try {
     sa.track(distinct_id, eventName, jsonMap);
   }catch(Exception e){
     throw new RuntimeException("writeLog error:"+jsonMap+"; errormsg="+e.getMessage());
