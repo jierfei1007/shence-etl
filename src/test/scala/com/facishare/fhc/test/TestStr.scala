@@ -82,4 +82,13 @@ class TestStr extends TestCase {
     }
     (event_value, firstActionName, secondActionName, lastActionName)
   }
+
+  def test4(): Unit ={
+
+    def join(name:String)=(age:Int)=>{
+      println(name+":"+age)
+    }
+   val array=Array(1,2,3,4,5,6)
+    array.foreach(join("jief"))
+  }
 }

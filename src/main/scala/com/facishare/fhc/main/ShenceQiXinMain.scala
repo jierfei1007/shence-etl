@@ -46,16 +46,16 @@ object ShenceQiXinMain {
     val hiveContext: HiveContext = new HiveContext(sparkContext)
 
     tableName match {
-      case "b_qx_createsession_detail" =>{
+      case "b_qx_createsession_detail" | "b_qx_markread_session_detail" =>{
         val df=QiXinSource.getQXCreateSessionDF(hiveContext,tableName,dt)
         val rdd:RDD[Tuple3[String, String, JMap[String, Object]]]=QiXinSource.getQXCreateSessionEventDF(df,tableName)
         rdd.foreachPartition(itor=>sendLogToShence(projectName,itor))
       }
-      case "b_qx_markread_session_detail"=>{
-        val df=QiXinSource.getQXCreateSessionDF(hiveContext,tableName,dt)
-        val rdd:RDD[Tuple3[String, String, JMap[String, Object]]]=QiXinSource.getQXCreateSessionEventDF(df,tableName)
-        rdd.foreachPartition(itor=>sendLogToShence(projectName,itor))
-      }
+//      case "b_qx_markread_session_detail"=>{
+//        val df=QiXinSource.getQXCreateSessionDF(hiveContext,tableName,dt)
+//        val rdd:RDD[Tuple3[String, String, JMap[String, Object]]]=QiXinSource.getQXCreateSessionEventDF(df,tableName)
+//        rdd.foreachPartition(itor=>sendLogToShence(projectName,itor))
+//      }
       case "b_qx_message_general_detail"=>{
        val rdd:RDD[Tuple3[String, String, JMap[String, Object]]]= QiXinSource.getQXMessageGeneralRDD(hiveContext,dt)
         rdd.foreachPartition(itor=>sendLogToShence(projectName,itor))
