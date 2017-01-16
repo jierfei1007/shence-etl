@@ -2,6 +2,7 @@ package com.facishare.fhc.test
 
 import junit.framework.TestCase
 
+import scala.collection.mutable.ListBuffer
 import scala.util.matching.Regex
 
 /**
@@ -90,5 +91,44 @@ class TestStr extends TestCase {
     }
    val array=Array(1,2,3,4,5,6)
     array.foreach(join("jief"))
+  }
+
+  def test5(): Unit ={
+    val a="b_qx_markread_session_detail"
+    a match {
+      case "b_qx_createsession_detail" | "b_qx_markread_session_detail" =>{println("hhhhh")}
+      case _ => {println("none")}
+    }
+  }
+
+  def test6(): Unit ={
+
+    def get:String={
+      "jief"
+    }
+    val name={
+      get
+    }
+    println("name="+name)
+
+  }
+  def test7(): Unit ={
+    val date= new java.util.Date(1484299221385L)
+    println(date)
+  }
+
+  def test8(): Unit ={
+    var a=ListBuffer[Tuple2[Int,Int]]()
+    a.+=((1,2))
+    var b=ListBuffer[Tuple2[Int,Int]]()
+    b.+=((3,4))
+    a.++(b)
+  }
+
+  def test9(): Unit ={
+    val a = ListBuffer[Tuple2[Int,Int]](Tuple2(1,2))
+    val b = ListBuffer[Tuple2[Int,Int]](Tuple2(3,4))
+    val c=a++ b
+    c.foreach(kv=>println(kv._1+"----"+kv._2))
   }
 }

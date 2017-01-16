@@ -18,10 +18,10 @@ import org.apache.spark.{SparkConf, SparkContext}
 import scala.util.matching.Regex
 
 /**
-  * <p>神测主类</p>
+  * <p>神测按天导入主类</p>
   * Created by jief on 2016/12/20.
   */
-object ShenCeETLMain {
+object ShenCeCEPByDayMain {
 
   def main(args: Array[String]): Unit = {
     /**
@@ -29,10 +29,8 @@ object ShenCeETLMain {
       */
     val waringMsg = "XXX.jar \n" +
       " runMode(local,yarn-cluster) \n" +
-      " 20161220\n" +
-      " 09\n"
-    val isExit = !ParaJudge.judge(args, 3, waringMsg)
-    val df: SimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+      " 20161220\n"
+    val isExit = !ParaJudge.judge(args, 2, waringMsg)
     //如果参数个数错误,则直接退出
     isExit match {
       case true => return
@@ -40,11 +38,9 @@ object ShenCeETLMain {
     }
     val runModel = args(0)
     val dt = args(1)
-    val hr = args(2)
     //验证参数
     assert(StringUtils.isNotBlank(runModel), "runMode(local,yarn-cluster) can not be blank")
     assert(StringUtils.isNotBlank(dt), "date can not be blank")
-    assert(StringUtils.isNotBlank(hr), "hour can not be blank")
     /**
       * 从配置中心获取参数
       */
@@ -55,9 +51,9 @@ object ShenCeETLMain {
     val hiveContext: HiveContext = new HiveContext(sparkContext)
 
     //获取cep server action DataFrame
-    val cepDF = CEPServerActionSource.getCEPServerActionDF(hiveContext, dt, hr)
-    val cepServerActionBean: RDD[Tuple3[Int, String, JMap[String, Object]]] = cepDF.map(row => {
-      val map = new util.HashMap[String, Object]()
+    val cepDF = CEPServerActionSource.getCEPServerActionDFByDay(hiveContext, dt)
+    val cepServerActionBean: RDD[Tuple3[Int,String,JMap[String,Object]]] = cepDF.map(row => {
+      val map= new util.HashMap[String,Object]()
       val action = row.getString(0)
       val platform = row.getInt(1)
       val device_id = row.getString(2)
@@ -74,79 +70,78 @@ object ShenCeETLMain {
       val version_name = row.getString(14)
       val actions_tuple = getEventValue(action)
       //特殊字符用ascii码16进制符号替换
-      var action_value: String = actions_tuple._1
-      if (action_value.contains(".")) {
-        action_value = action_value.replaceAll("\\.", "_2E_")
+      var action_value:String=actions_tuple._1
+      if(action_value.contains(".")){
+        action_value=action_value.replaceAll("\\.", "_2E_")
       }
-      if (action_value.contains("-")) {
-        action_value = action_value.replaceAll("-", "_2D_")
+      if(action_value.contains("-")){
+        action_value=action_value.replaceAll("-", "_2D_")
       }
-      if (action_value.contains("?")) {
-        action_value = action_value.replaceAll("\\?", "_3F_")
+      if(action_value.contains("?")){
+        action_value=action_value.replaceAll("\\?", "_3F_")
       }
-      if (action_value.contains("&")) {
-        action_value = action_value.replaceAll("\\&", "_26_")
+      if(action_value.contains("&")){
+        action_value=action_value.replaceAll("\\&", "_26_")
       }
-      if (action_value.contains("=")) {
-        action_value = action_value.replaceAll("=", "_3D_")
+      if(action_value.contains("=")){
+        action_value=action_value.replaceAll("=", "_3D_")
       }
-      if (action_value.contains("!")) {
-        action_value = action_value.replaceAll("\\!", "_21_")
+      if(action_value.contains("!")){
+        action_value=action_value.replaceAll("\\!", "_21_")
       }
-      if (action_value.contains("#")) {
-        action_value = action_value.replaceAll("#", "_23_")
+      if(action_value.contains("#")){
+        action_value=action_value.replaceAll("#", "_23_")
       }
-      if (action_value.contains(";")) {
-        action_value = action_value.replaceAll(";", "_3B_")
+      if(action_value.contains(";")){
+        action_value=action_value.replaceAll(";", "_3B_")
       }
       map.put("EventValue", action_value)
       map.put("Platform", platform.asInstanceOf[AnyRef])
       map.put("DeviceID", device_id)
-      map.put("IP", employee_ip)
-      map.put("Time", new Date(visit_time.getTime))
+      map.put("IP",employee_ip)
+      map.put("$time",new Date(visit_time.getTime))
       map.put("Duration", duration.asInstanceOf[AnyRef])
-      map.put("ProductVersion", inner_pro_version)
+      map.put("ProductVersion",inner_pro_version)
       map.put("EnterpriseID", eid.asInstanceOf[AnyRef])
       map.put("UserID", employee_id.asInstanceOf[AnyRef])
       map.put("ServiceType", service_type.asInstanceOf[AnyRef])
-      map.put("OSVersion", os_version)
-      map.put("BrowserVersion", browser_version)
-      map.put("Browser", browser)
-      map.put("FullAction", action)
-      map.put("FirstActionName", actions_tuple._2)
-      map.put("SecondActionName", actions_tuple._3)
-      map.put("LastActionName", actions_tuple._4)
-      map.put("VersionName", version_name)
-      map.put("FullUserID", eid.toString + "_" + employee_id.toString)
-      (eid, actions_tuple._1, map)
+      map.put("OSVersion",os_version)
+      map.put("BrowserVersion",browser_version)
+      map.put("Browser",browser)
+      map.put("FullAction",action)
+      map.put("FirstActionName",actions_tuple._2)
+      map.put("SecondActionName",actions_tuple._3)
+      map.put("LastActionName",actions_tuple._4)
+      map.put("VersionName",version_name)
+      map.put("FullUserID",eid.toString+"_"+employee_id.toString)
+      (eid,action_value,map)
     })
     //save to shence
-    cepServerActionBean.foreachPartition(itor => sendLogToShence(dt, hr)(itor))
+    cepServerActionBean.foreachPartition(itor=>sendLogToShence(dt)(itor))
     sparkContext.stop()
   }
-
   /**
     * 发送数据到神测服务
-    *
     * @param iterator
     */
-  def sendLogToShence(dt: String, hr: String)(iterator: Iterator[Tuple3[Int, String, JMap[String, Object]]]): Unit = {
-    val cep_shence_error_byhour_dir: String = com.facishare.fhc.util.Context.shence_error_log_dir + "/" + "cep_server_action_shence_byhour/" + dt + "/" + hr
-    val cep_shece_error_byhour_file: String = cep_shence_error_byhour_dir + "/cep_server_action_shence_byhour_" + System.currentTimeMillis() + ".err"
-    val outputStream = HDFSUtil.getOutPutStream(cep_shece_error_byhour_file)
+  def sendLogToShence(dt:String)(iterator: Iterator[Tuple3[Int,String,JMap[String,Object]]]): Unit ={
+    //初始化hdfs报错路径
+    val cep_error_log_dir:String= com.facishare.fhc.util.Context.shence_error_log_dir+"/"+"cep_server_actionbyday/"+dt+"/"
+    val iAddress: InetAddress = InetAddress.getLocalHost
+    val hostName: String = iAddress.getHostName
+    val cep_error_log_file:String=cep_error_log_dir+"cep_shence_error_"+hostName+"_"+System.currentTimeMillis()+".err"
+    val outputStream = HDFSUtil.getOutPutStream(cep_error_log_file)
     SendMsgToShence.setProvInfo()
-    val sa: SensorsAnalytics = new SensorsAnalytics(new SensorsAnalytics.BatchConsumer("http://172.17.43.58:8106/sa?project=default", 200))
+    val sa: SensorsAnalytics = new SensorsAnalytics(new SensorsAnalytics.BatchConsumer("http://172.17.43.58:8106/sa?project=default", 300))
     while (iterator.hasNext) {
       val cep = iterator.next()
       var map = cep._3
       SendMsgToShence.translate(map)
-      val distinct_id: String = map.getOrDefault("EnterpriseID", "0").toString
-      val eventName: String = map.getOrDefault("EventValue", "CEP_").toString
-      try {
-        SendMsgToShence.writeLog(sa, distinct_id, eventName, map)
-      } catch {
-        case error: Throwable => {
-          HDFSUtil.write2File(outputStream, error.getMessage)
+      try{
+        SendMsgToShence.writeLog(sa,cep._1+"",cep._2,map)
+      }catch {
+        case error:Throwable =>{
+          HDFSUtil.write2File(outputStream,map.toString+" because:"+error.getMessage)
         }
       }
     }
@@ -157,7 +152,6 @@ object ShenCeETLMain {
 
   /**
     * 分拆事件
-    *
     * @param fullAction url
     * @return
     */
@@ -167,7 +161,7 @@ object ShenCeETLMain {
     var firstActionName = ""
     var secondActionName = ""
     var lastActionName = ""
-    if (StringUtils.isNotEmpty(fullAction)) {
+    if(StringUtils.isNotEmpty(fullAction)) {
       var uri = fullAction
       val regex = new Regex("""^/(\w|\W)+""")
       if (regex.pattern.matcher(uri).matches()) {

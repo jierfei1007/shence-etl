@@ -1,5 +1,7 @@
 package com.facishare.fhc.test
 
+import java.util
+
 import junit.framework.TestCase
 
 /**
@@ -29,5 +31,31 @@ class TestPredefine extends TestCase{
     val b="zhangsan"
     a.foreach(e=>fun(b,e))
     def fun(arg1:String,arg2:Int){println(arg1+";"+arg2)}
+  }
+
+  def test3(): Unit ={
+
+    def aa(a:String)(block: =>Unit){
+      block
+      println(a)
+    }
+    def run():Unit=aa("jief")(run2())
+    def run2():Unit=aa("jief"){
+      println("hahahah")
+    }
+    run()
+
+  }
+
+  def test4(): Unit ={
+    val a=(1,2,3,4,5)
+    println(a._1)
+  }
+
+  def test5(): Unit ={
+    val map = new util.HashMap[String, Object]()
+    val a:Long=12345
+    map.put("aaa",a.toString)
+    println(map.get("aaa").getClass)
   }
 }

@@ -37,11 +37,13 @@ object HDFSUtil {
   def getOutPutStream(uri:String):FSDataOutputStream={
     val fs = FileSystem.newInstance(new Configuration())
     val path=new Path(uri)
-    if (fs.exists(path)) {
-      fs.delete(path, true)
+    if (!fs.exists(path)) {
+      val fileOut: FSDataOutputStream = fs.create(path, true)
+      fileOut
+    } else {
+      val fileOut: FSDataOutputStream = fs.append(path)
+      fileOut
     }
-    val fileOut: FSDataOutputStream = fs.create(path, false)
-    fileOut
   }
 
   /**
@@ -57,5 +59,15 @@ object HDFSUtil {
     }
     val fileOut: FSDataOutputStream = fs.append(path)
     fileOut
+  }
+
+  /**
+    * close hdfs file outputStream
+    * @param fileOut
+    */
+  def close(fileOut: FSDataOutputStream): Unit ={
+    if(fileOut!=null){
+      fileOut.close()
+    }
   }
 }

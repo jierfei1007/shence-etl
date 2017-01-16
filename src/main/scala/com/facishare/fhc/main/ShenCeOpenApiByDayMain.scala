@@ -5,7 +5,7 @@ import java.util
 import java.util.{Date, Map => JMap}
 
 import com.facishare.fhc.source.OpenApiSource
-import com.facishare.fhc.util.SendMsgToShence
+import com.facishare.fhc.util.{HDFSUtil, SendMsgToShence}
 import com.facishare.fs.cloud.helper.util.ParaJudge
 import com.sensorsdata.analytics.javasdk.SensorsAnalytics
 import org.apache.commons.lang.StringUtils
@@ -27,7 +27,7 @@ object ShenCeOpenApiByDayMain {
       " 20161220\n"
 
     val isExit = !ParaJudge.judge(args, 2, waringMsg)
-    val df:SimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+    val df: SimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
     //如果参数个数错误,则直接退出
     isExit match {
       case true => return
@@ -45,15 +45,16 @@ object ShenCeOpenApiByDayMain {
     //配置spark conf
     val sparkConf = new SparkConf().setAppName("shence-etl-openapi").setMaster(runModel)
     val sparkContext = new SparkContext(sparkConf)
-    val accumulator = sparkContext.accumulator(0,"add-shence-nums")
+    val accumulator = sparkContext.accumulator(0, "add-shence-nums")
     val hiveContext: HiveContext = new HiveContext(sparkContext)
+
     //创建api
-    val openApiDF=OpenApiSource.getOpenAPIDFbyDay(hiveContext,dt)
-    val openapirdd: RDD[Tuple3[Int,String,JMap[String,Object]]] = openApiDF.map(row => {
-      val map= new util.HashMap[String,Object]()
+    val openApiDF = OpenApiSource.getOpenAPIDFbyDay(hiveContext, dt)
+    val openapirdd: RDD[Tuple3[Int, String, JMap[String, Object]]] = openApiDF.map(row => {
+      val map = new util.HashMap[String, Object]()
       val eid = row.getInt(0)
       val elapse = row.getString(1)
-      val enterprise_account=row.getString(2)
+      val enterprise_account = row.getString(2)
       val app_id = row.getString(3)
       val error_code = row.getInt(4)
       val interface = row.getString(5)
@@ -63,24 +64,28 @@ object ShenCeOpenApiByDayMain {
       map.put("openapi_enterprise_id", eid.asInstanceOf[AnyRef])
       map.put("openapi_elapse", elapse)
       map.put("openapi_enterprise_account", enterprise_account)
-      map.put("openapi_app_id",app_id)
+      map.put("openapi_app_id", app_id)
       map.put("openapi_error_code", error_code.asInstanceOf[AnyRef])
-      map.put("openapi_interface",interface)
-      map.put("openapi_action","b_openapi_action")
-      map.put("Time",new Date(_time.getTime))
+      map.put("openapi_interface", interface)
+      map.put("openapi_action", "b_openapi_action")
+      map.put("Time", new Date(_time.getTime))
       accumulator.add(1)
-      (eid,action,map)
+      (eid, action, map)
     })
     //save to shence
-    openapirdd.foreachPartition(itor=>sendLogToShence(itor))
+    openapirdd.foreachPartition(itor => sendLogToShence(dt)(itor))
     sparkContext.stop()
   }
 
   /**
     * 发送数据到神测服务
+    *
     * @param iterator
     */
-  def sendLogToShence(iterator: Iterator[Tuple3[Int,String,JMap[String,Object]]]): Unit ={
+  def sendLogToShence(dt: String)(iterator: Iterator[Tuple3[Int, String, JMap[String, Object]]]): Unit = {
+    val openapi_shence_error_byday_dir: String = com.facishare.fhc.util.Context.shence_error_log_dir + "/" + "cep_shence_openapi_byday/" + dt
+    val openapi_shece_error_byday_file: String = openapi_shence_error_byday_dir + "/cep_shence_openapi_byday_" + System.currentTimeMillis() + ".err"
+    val outputStream = HDFSUtil.getOutPutStream(openapi_shece_error_byday_file)
     val sa: SensorsAnalytics = new SensorsAnalytics(new SensorsAnalytics.BatchConsumer("http://172.17.43.58:8106/sa?project=default", 200))
     while (iterator.hasNext) {
       val cep = iterator.next()
@@ -88,9 +93,16 @@ object ShenCeOpenApiByDayMain {
       SendMsgToShence.translateOpenApi(map)
       val distinct_id: String = map.getOrDefault("openapi_enterprise_id", "-10000").toString
       val eventName: String = map.getOrDefault("openapi_action", "b_openapi_action").toString
-      SendMsgToShence.writeLog(sa,distinct_id,eventName,map)
+      try {
+        SendMsgToShence.writeLog(sa, distinct_id, eventName, map)
+      } catch {
+        case error: Throwable => {
+          HDFSUtil.write2File(outputStream, error.getMessage)
+        }
+      }
     }
     sa.flush()
     sa.shutdown()
+    HDFSUtil.close(outputStream)
   }
 }
