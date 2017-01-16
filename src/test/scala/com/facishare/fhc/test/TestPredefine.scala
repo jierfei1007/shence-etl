@@ -58,4 +58,16 @@ class TestPredefine extends TestCase{
     map.put("aaa",a.toString)
     println(map.get("aaa").getClass)
   }
+  //test StringContext
+  def test6(): Unit ={
+    val a=123
+    println(s"$a")
+  }
+
+  def test7(): Unit ={
+    def a(name:String)(age:Int): Unit ={
+      println("name:"+name+",age="+age)
+    }
+    println(a("jief"))
+  }
 }
