@@ -96,8 +96,6 @@ public class SendMsgToShence {
     }
   }
   public static void translate(Map<String, Object> data) {
-//    data.put("$time", data.getOrDefault("Time",new Date()));
-//    data.remove("Time");
     data.put("$ip", data.getOrDefault("IP", "127.0.0.1"));
     String key;
     String productVersion="";

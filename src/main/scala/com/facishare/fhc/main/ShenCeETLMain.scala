@@ -57,7 +57,7 @@ object ShenCeETLMain {
 
     //获取cep server action DataFrame
     val cepDF = CEPServerActionSource.getCEPServerActionDF(hiveContext, dt, hr)
-    val cepServerActionBean: RDD[Tuple3[Int, String, JMap[String, Object]]] = cepDF.map(row => {
+    val cepServerActionBean: RDD[Tuple3[String, String, JMap[String, Object]]] = cepDF.map(row => {
       val map = new util.HashMap[String, Object]()
       val action = row.getString(0)
       val platform = row.getInt(1)
@@ -119,7 +119,7 @@ object ShenCeETLMain {
       map.put("LastActionName", actions_tuple._4)
       map.put("VersionName", version_name)
       map.put("FullUserID", eid.toString + "_" + employee_id.toString)
-      (eid, actions_tuple._1, map)
+      (eid.toString, action_value, map)
     })
     //save to shence
     cepServerActionBean.foreachPartition(itor => sendLogToShence(dt, hr)(itor))
@@ -131,20 +131,18 @@ object ShenCeETLMain {
     *
     * @param iterator
     */
-  def sendLogToShence(dt: String, hr: String)(iterator: Iterator[Tuple3[Int, String, JMap[String, Object]]]): Unit = {
+  def sendLogToShence(dt: String, hr: String)(iterator: Iterator[Tuple3[String, String, JMap[String, Object]]]): Unit = {
     val cep_shence_error_byhour_dir: String = com.facishare.fhc.util.Context.shence_error_log_dir + "/" + "cep_server_action_shence_byhour/" + dt + "/" + hr
     val cep_shece_error_byhour_file: String = cep_shence_error_byhour_dir + "/cep_server_action_shence_byhour_" + System.currentTimeMillis() + ".err"
     val hlog = HDFSLogFactory.getHDFSLog(cep_shece_error_byhour_file)
     SendMsgToShence.setProvInfo()
-    val sa: SensorsAnalytics = new SensorsAnalytics(new SensorsAnalytics.BatchConsumer("http://172.17.43.58:8106/sa?project=default", 300))
+    val sa: SensorsAnalytics =SendMsgToShence.getSA("default")
     while (iterator.hasNext) {
       val cep = iterator.next()
       var map = cep._3
       SendMsgToShence.translate(map)
-      val distinct_id: String = map.getOrDefault("EnterpriseID", "0").toString
-      val eventName: String = map.getOrDefault("EventValue", "CEP_").toString
       try {
-        SendMsgToShence.writeLog(sa, distinct_id, eventName, map)
+        SendMsgToShence.writeLog(sa, cep._1, cep._2, map)
       } catch {
         case error: Throwable => {
           val outputStream = hlog.getOutPutStream()

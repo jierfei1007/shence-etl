@@ -51,7 +51,7 @@ object ShenCeOpenApiMain {
     val hiveContext: HiveContext = new HiveContext(sparkContext)
     //创建api
     val openApiDF = OpenApiSource.getOpenAPIDF(hiveContext, dt, hr)
-    val openapirdd: RDD[Tuple3[Int, String, JMap[String, Object]]] = openApiDF.map(row => {
+    val openapirdd: RDD[Tuple3[String, String, JMap[String, Object]]] = openApiDF.map(row => {
       val map = new util.HashMap[String, Object]()
       val eid = row.getInt(0)
       val elapse = row.getString(1)
@@ -69,9 +69,9 @@ object ShenCeOpenApiMain {
       map.put("openapi_error_code", error_code.asInstanceOf[AnyRef])
       map.put("openapi_interface", interface)
       map.put("openapi_action", "b_openapi_action")
-      map.put("Time", new Date(_time.getTime))
+      map.put("$time", new Date(_time.getTime))
       accumulator.add(1)
-      (eid, action, map)
+      (eid.toString, "b_openapi_action", map)
     })
     //save to shence
     openapirdd.foreachPartition(itor => sendLogToShence(dt, hr)(itor))
@@ -83,19 +83,17 @@ object ShenCeOpenApiMain {
     *
     * @param iterator
     */
-  def sendLogToShence(dt: String, hr: String)(iterator: Iterator[Tuple3[Int, String, JMap[String, Object]]]): Unit = {
+  def sendLogToShence(dt: String, hr: String)(iterator: Iterator[Tuple3[String, String, JMap[String, Object]]]): Unit = {
     val openapi_shence_error_byhour_dir: String = com.facishare.fhc.util.Context.shence_error_log_dir + "/" + "openapi_shence_byday/" + dt + "/" + hr
     val openapi_shece_error_byhour_file: String = openapi_shence_error_byhour_dir + "/openapi_shence_byhour_" + System.currentTimeMillis() + ".err"
     val hlog = HDFSLogFactory.getHDFSLog(openapi_shece_error_byhour_file)
     val sa: SensorsAnalytics = new SensorsAnalytics(new SensorsAnalytics.BatchConsumer("http://172.17.43.58:8106/sa?project=default", 200))
     while (iterator.hasNext) {
       val cep = iterator.next()
-      var map = cep._3
-      SendMsgToShence.translateOpenApi(map)
-      val distinct_id: String = map.getOrDefault("openapi_enterprise_id", "-10000").toString
-      val eventName: String = map.getOrDefault("openapi_action", "b_openapi_action").toString
+      val map = cep._3
+//      SendMsgToShence.translateOpenApi(map)
       try {
-        SendMsgToShence.writeLog(sa, distinct_id, eventName, map)
+        SendMsgToShence.writeLog(sa, cep._1, cep._2, map)
       } catch {
         case error: Throwable => {
           val outputStream=hlog.getOutPutStream()

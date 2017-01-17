@@ -4,7 +4,8 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataOutputStream, FileSystem, Path}
 
 private[util] class HDFSLog(uri: String) {
-  var outputSteam: FSDataOutputStream = null
+
+  private var outputSteam: FSDataOutputStream = null
 
   /**
     * get hdfs outPutStream
