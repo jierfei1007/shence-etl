@@ -5,7 +5,7 @@ import java.util
 import java.util.{Date, Map => JMap}
 
 import com.facishare.fhc.source.OpenApiSource
-import com.facishare.fhc.util.{HDFSUtil, SendMsgToShence}
+import com.facishare.fhc.util.{HDFSLogFactory, HDFSUtil, SendMsgToShence}
 import com.facishare.fs.cloud.helper.util.ParaJudge
 import com.sensorsdata.analytics.javasdk.SensorsAnalytics
 import org.apache.commons.lang.StringUtils
@@ -85,7 +85,7 @@ object ShenCeOpenApiByDayMain {
   def sendLogToShence(dt: String)(iterator: Iterator[Tuple3[Int, String, JMap[String, Object]]]): Unit = {
     val openapi_shence_error_byday_dir: String = com.facishare.fhc.util.Context.shence_error_log_dir + "/" + "cep_shence_openapi_byday/" + dt
     val openapi_shece_error_byday_file: String = openapi_shence_error_byday_dir + "/cep_shence_openapi_byday_" + System.currentTimeMillis() + ".err"
-    val outputStream = HDFSUtil.getOutPutStream(openapi_shece_error_byday_file)
+    val hlog = HDFSLogFactory.getHDFSLog(openapi_shece_error_byday_file)
     val sa: SensorsAnalytics = new SensorsAnalytics(new SensorsAnalytics.BatchConsumer("http://172.17.43.58:8106/sa?project=default", 200))
     while (iterator.hasNext) {
       val cep = iterator.next()
@@ -97,12 +97,13 @@ object ShenCeOpenApiByDayMain {
         SendMsgToShence.writeLog(sa, distinct_id, eventName, map)
       } catch {
         case error: Throwable => {
+         val outputStream= hlog.getOutPutStream()
           HDFSUtil.write2File(outputStream, error.getMessage)
         }
       }
     }
     sa.flush()
     sa.shutdown()
-    HDFSUtil.close(outputStream)
+    hlog.close()
   }
 }

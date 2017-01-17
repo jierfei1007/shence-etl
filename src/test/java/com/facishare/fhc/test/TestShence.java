@@ -41,4 +41,8 @@ public class TestShence extends TestCase{
       throw new InvalidArgumentException("The event value\'" + key + "\' is invalid.");
     }
   }
+  public void test1(){
+    String a="Thu Nov 17 16:51:40 CST 2016";
+
+  }
 }

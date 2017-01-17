@@ -1,8 +1,12 @@
 package com.facishare.fhc.test
 
 import java.util
+import java.util.regex.Pattern
 
 import junit.framework.TestCase
+
+import scala.collection.mutable.ArrayBuffer
+import scala.util.matching.Regex
 
 /**
   * Created by jief on 2016/12/28.
@@ -28,9 +32,13 @@ class TestPredefine extends TestCase{
 
   def testbibao(): Unit ={
     val a = Array(1,2,3,4,5)
-    val b="zhangsan"
-    a.foreach(e=>fun(b,e))
-    def fun(arg1:String,arg2:Int){println(arg1+";"+arg2)}
+    val array = new ArrayBuffer[Int]()
+    array+=2
+    array.foreach(println(_))
+//    val b="zhangsan"
+//    a.foreach(e=>fun(b,e))
+//    def fun(arg1:String,arg2:Int){println(arg1+";"+arg2)}
+
   }
 
   def test3(): Unit ={
@@ -68,6 +76,16 @@ class TestPredefine extends TestCase{
     def a(name:String)(age:Int): Unit ={
       println("name:"+name+",age="+age)
     }
-    println(a("jief"))
+    a("jief")(33)
   }
+
+  def test8(): Unit ={
+    val p1="^-?[0-9]\\d*$".r
+    println(p1.pattern.matcher("3234").matches())
+
+    val pattern = new Regex("^-?[0-9]\\d*$")
+    val p=Pattern.compile("^-?[0-9]\\d*$")
+    println(p.matcher("231").matches())
+  }
+
 }

@@ -34,7 +34,7 @@ object HDFSUtil {
     * @param uri
     * @return
     */
-  def getOutPutStream(uri:String):FSDataOutputStream={
+    def getOutPutStream(uri:String):FSDataOutputStream={
     val fs = FileSystem.newInstance(new Configuration())
     val path=new Path(uri)
     if (!fs.exists(path)) {

@@ -4,9 +4,10 @@ import java.net.InetAddress
 import java.text.SimpleDateFormat
 import java.util
 import java.util.{Date, Map => JMap}
+
 import com.facishare.fhc.bean.ShenceCEPServerAction
 import com.facishare.fhc.source.CEPServerActionSource
-import com.facishare.fhc.util.{HDFSUtil, JsonUtil, SendMsgToShence}
+import com.facishare.fhc.util.{HDFSLogFactory, HDFSUtil, JsonUtil, SendMsgToShence}
 import com.facishare.fs.cloud.helper.util.ParaJudge
 import com.sensorsdata.analytics.javasdk.SensorsAnalytics
 import org.apache.commons.lang.StringUtils
@@ -133,9 +134,9 @@ object ShenCeETLMain {
   def sendLogToShence(dt: String, hr: String)(iterator: Iterator[Tuple3[Int, String, JMap[String, Object]]]): Unit = {
     val cep_shence_error_byhour_dir: String = com.facishare.fhc.util.Context.shence_error_log_dir + "/" + "cep_server_action_shence_byhour/" + dt + "/" + hr
     val cep_shece_error_byhour_file: String = cep_shence_error_byhour_dir + "/cep_server_action_shence_byhour_" + System.currentTimeMillis() + ".err"
-    val outputStream = HDFSUtil.getOutPutStream(cep_shece_error_byhour_file)
+    val hlog = HDFSLogFactory.getHDFSLog(cep_shece_error_byhour_file)
     SendMsgToShence.setProvInfo()
-    val sa: SensorsAnalytics = new SensorsAnalytics(new SensorsAnalytics.BatchConsumer("http://172.17.43.58:8106/sa?project=default", 200))
+    val sa: SensorsAnalytics = new SensorsAnalytics(new SensorsAnalytics.BatchConsumer("http://172.17.43.58:8106/sa?project=default", 300))
     while (iterator.hasNext) {
       val cep = iterator.next()
       var map = cep._3
@@ -146,13 +147,14 @@ object ShenCeETLMain {
         SendMsgToShence.writeLog(sa, distinct_id, eventName, map)
       } catch {
         case error: Throwable => {
+          val outputStream = hlog.getOutPutStream()
           HDFSUtil.write2File(outputStream, error.getMessage)
         }
       }
     }
     sa.flush()
     sa.shutdown()
-    HDFSUtil.close(outputStream)
+    hlog.close()
   }
 
   /**

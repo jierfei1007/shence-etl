@@ -4,9 +4,10 @@ import java.net.InetAddress
 import java.text.SimpleDateFormat
 import java.util
 import java.util.{Date, Map => JMap}
+
 import com.facishare.fhc.bean.ShenceCEPServerAction
 import com.facishare.fhc.source.CEPServerActionSource
-import com.facishare.fhc.util.{HDFSUtil, JsonUtil, SendMsgToShence}
+import com.facishare.fhc.util.{HDFSLogFactory, HDFSUtil, JsonUtil, SendMsgToShence}
 import com.facishare.fs.cloud.helper.util.ParaJudge
 import com.sensorsdata.analytics.javasdk.SensorsAnalytics
 import org.apache.commons.lang.StringUtils
@@ -130,7 +131,7 @@ object ShenCeCEPByDayMain {
     val iAddress: InetAddress = InetAddress.getLocalHost
     val hostName: String = iAddress.getHostName
     val cep_error_log_file:String=cep_error_log_dir+"cep_shence_error_"+hostName+"_"+System.currentTimeMillis()+".err"
-    val outputStream = HDFSUtil.getOutPutStream(cep_error_log_file)
+    val hlog = HDFSLogFactory.getHDFSLog(cep_error_log_file)
     SendMsgToShence.setProvInfo()
     val sa: SensorsAnalytics = new SensorsAnalytics(new SensorsAnalytics.BatchConsumer("http://172.17.43.58:8106/sa?project=default", 300))
     while (iterator.hasNext) {
@@ -141,13 +142,14 @@ object ShenCeCEPByDayMain {
         SendMsgToShence.writeLog(sa,cep._1+"",cep._2,map)
       }catch {
         case error:Throwable =>{
+          val outputStream=hlog.getOutPutStream()
           HDFSUtil.write2File(outputStream,map.toString+" because:"+error.getMessage)
         }
       }
     }
     sa.flush()
     sa.shutdown()
-    HDFSUtil.close(outputStream)
+    hlog.close()
   }
 
   /**

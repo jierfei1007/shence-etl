@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat
 import java.util.{Date, Map => JMap}
 
 import com.facishare.fhc.source.QiXinSource
-import com.facishare.fhc.util.{HDFSUtil, SendMsgToShence}
+import com.facishare.fhc.util.{HDFSLogFactory, HDFSUtil, SendMsgToShence}
 import com.facishare.fs.cloud.helper.util.ParaJudge
 import com.sensorsdata.analytics.javasdk.SensorsAnalytics
 import org.apache.commons.lang.StringUtils
@@ -76,7 +76,7 @@ object ShenceQiXinMain {
     val iAddress: InetAddress = InetAddress.getLocalHost
     val hostName: String = iAddress.getHostName
     val qixin_error_log_file: String = qixin_error_log_dir + title + "_" + hostName + "_" + System.currentTimeMillis() + ".err"
-    val outputStream = HDFSUtil.getOutPutStream(qixin_error_log_file)
+    val hlog = HDFSLogFactory.getHDFSLog(qixin_error_log_file)
     val sa: SensorsAnalytics = SendMsgToShence.getSA(projectName)
     while (iterator.hasNext) {
       val cep = iterator.next()
@@ -85,12 +85,13 @@ object ShenceQiXinMain {
         SendMsgToShence.writeLog(sa, cep._1, cep._2, map)
       } catch {
         case e: Throwable => {
+          val outputStream=hlog.getOutPutStream()
           HDFSUtil.write2File(outputStream, map.toString + "errormsg:" + e.getMessage)
         }
       }
     }
     sa.flush()
     sa.shutdown()
-    HDFSUtil.close(outputStream)
+    hlog.close()
   }
 }
