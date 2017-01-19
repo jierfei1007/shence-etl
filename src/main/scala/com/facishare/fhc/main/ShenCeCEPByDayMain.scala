@@ -133,7 +133,7 @@ object ShenCeCEPByDayMain {
     val cep_error_log_file:String=cep_error_log_dir+"cep_shence_error_"+hostName+"_"+System.currentTimeMillis()+".err"
     val hlog = HDFSLogFactory.getHDFSLog(cep_error_log_file)
     SendMsgToShence.setProvInfo()
-    val sa: SensorsAnalytics = new SensorsAnalytics(new SensorsAnalytics.BatchConsumer("http://172.17.43.58:8106/sa?project=default", 300))
+    val sa: SensorsAnalytics =SendMsgToShence.getSA("default")
     while (iterator.hasNext) {
       val cep = iterator.next()
       var map = cep._3

@@ -131,4 +131,14 @@ class TestStr extends TestCase {
     val c=a++ b
     c.foreach(kv=>println(kv._1+"----"+kv._2))
   }
+  def test10(): Unit ={
+    val a="5.4.0"
+    val b="5.3.9.9.9"
+    println(a>b)
+  }
+
+  def test11(): Unit ={
+    val product_version_regex="\\d+(\\.\\d+)*".r
+    println(product_version_regex.pattern.matcher("12.3.3.3").matches())
+  }
 }

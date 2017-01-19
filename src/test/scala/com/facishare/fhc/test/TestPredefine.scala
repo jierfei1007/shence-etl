@@ -88,4 +88,8 @@ class TestPredefine extends TestCase{
     println(p.matcher("231").matches())
   }
 
+  def test9(): Unit ={
+    val number_regex="^[0-9]\\d*$".r
+    println(number_regex.pattern.matcher("2121312").matches())
+  }
 }
