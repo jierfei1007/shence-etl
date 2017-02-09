@@ -151,7 +151,6 @@ object ShenCeCEPByDayMain {
     sa.shutdown()
     hlog.close()
   }
-
   /**
     * 分拆事件
     * @param fullAction url
