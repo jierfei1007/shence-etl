@@ -2,7 +2,7 @@ package com.facishare.fhc.test
 
 import junit.framework.TestCase
 
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.util.matching.Regex
 
 /**
@@ -140,5 +140,47 @@ class TestStr extends TestCase {
   def test11(): Unit ={
     val product_version_regex="\\d+(\\.\\d+)*".r
     println(product_version_regex.pattern.matcher("12.3.3.3").matches())
+  }
+
+  def test12(): Unit ={
+     def a(name:String):String = bb{
+       println(name)
+       "jief"
+     }
+    def bb(a:String):String={
+      println("aaa===="+a)
+      a*2
+    }
+    a("dsjfls")
+  }
+
+  def test13(): Unit ={
+
+    def b:String={
+      println("sss")
+      "bbb"
+    }
+    def a:String={
+       "jief"
+     }
+
+    println(a.length)
+
+  }
+
+  def test14(): Unit ={
+
+    val a=(name:String)=>println(name)
+    a("jief")
+  }
+
+  def test15(): Unit ={
+    val referenceBuffer = new ArrayBuffer[String]
+    referenceBuffer +="jief"
+    referenceBuffer +="jief"
+    referenceBuffer +="hhh"
+    referenceBuffer.foreach(println(_))
+    referenceBuffer -="jief"
+    referenceBuffer.foreach(println(_))
   }
 }

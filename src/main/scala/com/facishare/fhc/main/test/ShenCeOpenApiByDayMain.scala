@@ -1,4 +1,4 @@
-package com.facishare.fhc.main
+package com.facishare.fhc.main.test
 
 import java.text.SimpleDateFormat
 import java.util
@@ -10,8 +10,8 @@ import com.facishare.fs.cloud.helper.util.ParaJudge
 import com.sensorsdata.analytics.javasdk.SensorsAnalytics
 import org.apache.commons.lang.StringUtils
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.hive.HiveContext
+import org.apache.spark.{SparkConf, SparkContext}
 
 /**
   * Created by jief on 2016/12/30.
@@ -86,7 +86,7 @@ object ShenCeOpenApiByDayMain {
     val openapi_shence_error_byday_dir: String = com.facishare.fhc.util.Context.shence_error_log_dir + "/" + "cep_shence_openapi_byday/" + dt
     val openapi_shece_error_byday_file: String = openapi_shence_error_byday_dir + "/cep_shence_openapi_byday_" + System.currentTimeMillis() + ".err"
     val hlog = HDFSLogFactory.getHDFSLog(openapi_shece_error_byday_file)
-    val sa: SensorsAnalytics = SendMsgToShence.getSA("default")
+    val sa: SensorsAnalytics = new SensorsAnalytics(new SensorsAnalytics.BatchConsumer("http://sasdata.foneshare.cn/sa?project=default", 300))
     while (iterator.hasNext) {
       val cep = iterator.next()
       val map = cep._3

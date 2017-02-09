@@ -1,4 +1,4 @@
-package com.facishare.fhc.main
+package com.facishare.fhc.main.test
 
 import java.text.SimpleDateFormat
 import java.util
@@ -10,13 +10,13 @@ import com.facishare.fs.cloud.helper.util.ParaJudge
 import com.sensorsdata.analytics.javasdk.SensorsAnalytics
 import org.apache.commons.lang.StringUtils
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.hive.HiveContext
+import org.apache.spark.{SparkConf, SparkContext}
 
 /**
   * Created by jief on 2016/12/30.
   */
-object ShenCeOpenApiByDayMain {
+object ShenCeOpenApiMain {
 
   def main(args: Array[String]): Unit = {
     /**
@@ -24,10 +24,10 @@ object ShenCeOpenApiByDayMain {
       */
     val waringMsg = "XXX.jar \n" +
       " runMode(local,yarn-cluster) \n" +
-      " 20161220\n"
-
-    val isExit = !ParaJudge.judge(args, 2, waringMsg)
-    val df: SimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+      " 20161220\n" +
+      " 09\n"
+    val isExit = !ParaJudge.judge(args, 3, waringMsg)
+    val df: SimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     //如果参数个数错误,则直接退出
     isExit match {
       case true => return
@@ -35,9 +35,11 @@ object ShenCeOpenApiByDayMain {
     }
     val runModel = args(0)
     val dt = args(1)
+    val hr = args(2)
     //验证参数
     assert(StringUtils.isNotBlank(runModel), "runMode(local,yarn-cluster) can not be blank")
     assert(StringUtils.isNotBlank(dt), "date can not be blank")
+    assert(StringUtils.isNotBlank(hr), "hour can not be blank")
     /**
       * 从配置中心获取参数
       */
@@ -47,9 +49,8 @@ object ShenCeOpenApiByDayMain {
     val sparkContext = new SparkContext(sparkConf)
     val accumulator = sparkContext.accumulator(0, "add-shence-nums")
     val hiveContext: HiveContext = new HiveContext(sparkContext)
-
     //创建api
-    val openApiDF = OpenApiSource.getOpenAPIDFbyDay(hiveContext, dt)
+    val openApiDF = OpenApiSource.getOpenAPIDF(hiveContext, dt, hr)
     val openapirdd: RDD[Tuple3[String, String, JMap[String, Object]]] = openApiDF.map(row => {
       val map = new util.HashMap[String, Object]()
       val eid = row.getInt(0)
@@ -73,7 +74,7 @@ object ShenCeOpenApiByDayMain {
       (eid.toString, "b_openapi_action", map)
     })
     //save to shence
-    openapirdd.foreachPartition(itor => sendLogToShence(dt)(itor))
+    openapirdd.foreachPartition(itor => sendLogToShence(dt, hr)(itor))
     sparkContext.stop()
   }
 
@@ -82,11 +83,11 @@ object ShenCeOpenApiByDayMain {
     *
     * @param iterator
     */
-  def sendLogToShence(dt: String)(iterator: Iterator[Tuple3[String, String, JMap[String, Object]]]): Unit = {
-    val openapi_shence_error_byday_dir: String = com.facishare.fhc.util.Context.shence_error_log_dir + "/" + "cep_shence_openapi_byday/" + dt
-    val openapi_shece_error_byday_file: String = openapi_shence_error_byday_dir + "/cep_shence_openapi_byday_" + System.currentTimeMillis() + ".err"
-    val hlog = HDFSLogFactory.getHDFSLog(openapi_shece_error_byday_file)
-    val sa: SensorsAnalytics = SendMsgToShence.getSA("default")
+  def sendLogToShence(dt: String, hr: String)(iterator: Iterator[Tuple3[String, String, JMap[String, Object]]]): Unit = {
+    val openapi_shence_error_byhour_dir: String = com.facishare.fhc.util.Context.shence_error_log_dir + "/" + "openapi_shence_byday/" + dt + "/" + hr
+    val openapi_shece_error_byhour_file: String = openapi_shence_error_byhour_dir + "/openapi_shence_byhour_" + System.currentTimeMillis() + ".err"
+    val hlog = HDFSLogFactory.getHDFSLog(openapi_shece_error_byhour_file)
+    val sa: SensorsAnalytics = new SensorsAnalytics(new SensorsAnalytics.BatchConsumer("http://sasdata.foneshare.cn/sa?project=default", 300))
     while (iterator.hasNext) {
       val cep = iterator.next()
       val map = cep._3
@@ -95,7 +96,7 @@ object ShenCeOpenApiByDayMain {
         SendMsgToShence.writeLog(sa, cep._1, cep._2, map)
       } catch {
         case error: Exception => {
-         val outputStream= hlog.getOutPutStream()
+          val outputStream=hlog.getOutPutStream()
           HDFSUtil.write2File(outputStream, error.getMessage)
         }
       }

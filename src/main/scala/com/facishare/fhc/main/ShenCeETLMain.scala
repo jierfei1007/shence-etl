@@ -104,7 +104,7 @@ object ShenCeETLMain {
       map.put("Platform", platform.asInstanceOf[AnyRef])
       map.put("DeviceID", device_id)
       map.put("IP", employee_ip)
-      map.put("Time", new Date(visit_time.getTime))
+      map.put("$time", new Date(visit_time.getTime))
       map.put("Duration", duration.asInstanceOf[AnyRef])
       map.put("ProductVersion", inner_pro_version)
       map.put("EnterpriseID", eid.asInstanceOf[AnyRef])
@@ -144,7 +144,7 @@ object ShenCeETLMain {
       try {
         SendMsgToShence.writeLog(sa, cep._1, cep._2, map)
       } catch {
-        case error: Throwable => {
+        case error: Exception => {
           val outputStream = hlog.getOutPutStream()
           HDFSUtil.write2File(outputStream, error.getMessage)
         }

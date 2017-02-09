@@ -95,7 +95,7 @@ object ShenCeOpenApiMain {
       try {
         SendMsgToShence.writeLog(sa, cep._1, cep._2, map)
       } catch {
-        case error: Throwable => {
+        case error: Exception => {
           val outputStream=hlog.getOutPutStream()
           HDFSUtil.write2File(outputStream, error.getMessage)
         }

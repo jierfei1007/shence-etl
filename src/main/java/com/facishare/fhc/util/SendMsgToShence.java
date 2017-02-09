@@ -86,9 +86,9 @@ public class SendMsgToShence {
         versionName=ret.getString("value");
         provMap.put(productVersion,versionName);
       }
-      for(Map.Entry<String,String> ele:provMap.entrySet()){
-        System.out.println("productVersion:"+ele.getKey()+" versionName:"+ele.getValue());
-      }
+//      for(Map.Entry<String,String> ele:provMap.entrySet()){
+//        System.out.println("productVersion:"+ele.getKey()+" versionName:"+ele.getValue());
+//      }
       stat.close();
       conn.close();
     }catch(Exception e){
