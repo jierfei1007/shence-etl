@@ -90,7 +90,6 @@ object ShenCeOpenApiByDayMain {
     while (iterator.hasNext) {
       val cep = iterator.next()
       val map = cep._3
-//      SendMsgToShence.translateOpenApi(map)
       try {
         SendMsgToShence.writeLog(sa, cep._1, cep._2, map)
       } catch {

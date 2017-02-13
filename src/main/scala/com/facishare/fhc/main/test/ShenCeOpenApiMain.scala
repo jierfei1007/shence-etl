@@ -87,11 +87,10 @@ object ShenCeOpenApiMain {
     val openapi_shence_error_byhour_dir: String = com.facishare.fhc.util.Context.shence_error_log_dir + "/" + "openapi_shence_byday/" + dt + "/" + hr
     val openapi_shece_error_byhour_file: String = openapi_shence_error_byhour_dir + "/openapi_shence_byhour_" + System.currentTimeMillis() + ".err"
     val hlog = HDFSLogFactory.getHDFSLog(openapi_shece_error_byhour_file)
-    val sa: SensorsAnalytics = new SensorsAnalytics(new SensorsAnalytics.BatchConsumer("http://sasdata.foneshare.cn/sa?project=default", 300))
+    val sa: SensorsAnalytics = new SensorsAnalytics(new SensorsAnalytics.BatchConsumer("http://sasdata.foneshare.cn/sa?project=default", 200))
     while (iterator.hasNext) {
       val cep = iterator.next()
       val map = cep._3
-//      SendMsgToShence.translateOpenApi(map)
       try {
         SendMsgToShence.writeLog(sa, cep._1, cep._2, map)
       } catch {
