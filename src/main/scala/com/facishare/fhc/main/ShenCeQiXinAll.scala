@@ -53,20 +53,20 @@ object ShenCeQiXinAll {
 
     val qx_csd_df = QiXinSource.getQXCreateSessionDF(hiveContext, b_qx_createsession_detail, dt)
     val qx_csd_rdd: RDD[Tuple3[String, String, JMap[String, Object]]] = QiXinSource.getQXCreateSessionEventDF(qx_csd_df, b_qx_createsession_detail)
-    qx_csd_rdd.foreachPartition(itor => sendLogToShence(b_qx_createsession_detail,dt,projectName, itor))
+    qx_csd_rdd.coalesce(10,false).foreachPartition(itor => sendLogToShence(b_qx_createsession_detail,dt,projectName, itor))
 
     //b_qx_markread_session_detail
     val qx_msd_df = QiXinSource.getQXCreateSessionDF(hiveContext, b_qx_createsession_detail, dt)
     val qx_msd_rdd: RDD[Tuple3[String, String, JMap[String, Object]]] = QiXinSource.getQXCreateSessionEventDF(qx_msd_df, b_qx_markread_session_detail)
-    qx_msd_rdd.foreachPartition(itor => sendLogToShence(b_qx_markread_session_detail,dt,projectName, itor))
+    qx_msd_rdd.coalesce(10,false).foreachPartition(itor => sendLogToShence(b_qx_markread_session_detail,dt,projectName, itor))
 
     //b_qx_message_general_detail
     val qx_mgd_rdd:RDD[Tuple3[String, String, JMap[String, Object]]]= QiXinSource.getQXMessageGeneralRDD(hiveContext,dt)
-    qx_mgd_rdd.foreachPartition(itor=>sendLogToShence(b_qx_message_general_detail,dt,projectName,itor))
+    qx_mgd_rdd.coalesce(10,false).foreachPartition(itor=>sendLogToShence(b_qx_message_general_detail,dt,projectName,itor))
 
     //b_qx_message_igt_detail
     val qx_mid_rdd:RDD[Tuple3[String, String, JMap[String, Object]]]= QiXinSource.getQXMessageigtRDD(hiveContext,dt)
-    qx_mid_rdd.foreachPartition(itor=>sendLogToShence(b_qx_message_igt_detail,dt,projectName,itor))
+    qx_mid_rdd.coalesce(10,false).foreachPartition(itor=>sendLogToShence(b_qx_message_igt_detail,dt,projectName,itor))
     sparkContext.stop()
   }
 

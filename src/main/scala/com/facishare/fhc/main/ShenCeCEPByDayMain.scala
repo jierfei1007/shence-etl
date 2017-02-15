@@ -118,7 +118,7 @@ object ShenCeCEPByDayMain {
       (eid,action_value,map)
     })
     //save to shence
-    cepServerActionBean.foreachPartition(itor=>sendLogToShence(dt)(itor))
+    cepServerActionBean.coalesce(15,true).foreachPartition(itor=>sendLogToShence(dt)(itor))
     sparkContext.stop()
   }
   /**

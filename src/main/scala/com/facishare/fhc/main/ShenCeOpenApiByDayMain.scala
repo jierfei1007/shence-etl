@@ -72,6 +72,7 @@ object ShenCeOpenApiByDayMain {
       accumulator.add(1)
       (eid.toString, "b_openapi_action", map)
     })
+    println("partition num:"+openapirdd.getNumPartitions)
     //save to shence
     openapirdd.foreachPartition(itor => sendLogToShence(dt)(itor))
     sparkContext.stop()

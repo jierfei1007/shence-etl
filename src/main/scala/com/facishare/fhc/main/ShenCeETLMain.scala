@@ -33,7 +33,7 @@ object ShenCeETLMain {
       " 20161220\n" +
       " 09\n"
     val isExit = !ParaJudge.judge(args, 3, waringMsg)
-    val df: SimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    val df: SimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
     //如果参数个数错误,则直接退出
     isExit match {
       case true => return
@@ -122,7 +122,7 @@ object ShenCeETLMain {
       (eid.toString, action_value, map)
     })
     //save to shence
-    cepServerActionBean.foreachPartition(itor => sendLogToShence(dt, hr)(itor))
+    cepServerActionBean.coalesce(10,true).foreachPartition(itor => sendLogToShence(dt, hr)(itor))
     sparkContext.stop()
   }
 
