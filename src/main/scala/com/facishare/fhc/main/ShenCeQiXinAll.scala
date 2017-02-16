@@ -6,10 +6,11 @@ import java.util.{Date, Map => JMap}
 
 import com.facishare.fhc.source.QiXinSource
 import com.facishare.fhc.util.{HDFSLogFactory, HDFSUtil, SendMsgToShence}
+import com.facishare.fs.cloud.helper.msg.MessageSender
 import com.facishare.fs.cloud.helper.util.ParaJudge
 import com.sensorsdata.analytics.javasdk.SensorsAnalytics
 import org.apache.commons.lang.StringUtils
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{Accumulator, SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.hive.HiveContext
 
@@ -47,26 +48,34 @@ object ShenCeQiXinAll {
 
     val sparkConf = new SparkConf().setAppName("shence-etl-qixin").setMaster(runModel)
     val sparkContext = new SparkContext(sparkConf)
+    val accumulator:Accumulator[Long] = sparkContext.accumulator(0, "add-shence-nums")
+    val errorNums:Accumulator[Long] = sparkContext.accumulator(0, "error-nums")
     val hiveContext: HiveContext = new HiveContext(sparkContext)
 
     //b_qx_createsession_detail
 
     val qx_csd_df = QiXinSource.getQXCreateSessionDF(hiveContext, b_qx_createsession_detail, dt)
     val qx_csd_rdd: RDD[Tuple3[String, String, JMap[String, Object]]] = QiXinSource.getQXCreateSessionEventDF(qx_csd_df, b_qx_createsession_detail)
-    qx_csd_rdd.coalesce(10,false).foreachPartition(itor => sendLogToShence(b_qx_createsession_detail,dt,projectName, itor))
+    qx_csd_rdd.coalesce(10,false).foreachPartition(itor => sendLogToShence(accumulator,errorNums,b_qx_createsession_detail,dt,projectName, itor))
 
     //b_qx_markread_session_detail
     val qx_msd_df = QiXinSource.getQXCreateSessionDF(hiveContext, b_qx_createsession_detail, dt)
     val qx_msd_rdd: RDD[Tuple3[String, String, JMap[String, Object]]] = QiXinSource.getQXCreateSessionEventDF(qx_msd_df, b_qx_markread_session_detail)
-    qx_msd_rdd.coalesce(10,false).foreachPartition(itor => sendLogToShence(b_qx_markread_session_detail,dt,projectName, itor))
+    qx_msd_rdd.coalesce(10,false).foreachPartition(itor => sendLogToShence(accumulator,errorNums,b_qx_markread_session_detail,dt,projectName, itor))
 
     //b_qx_message_general_detail
     val qx_mgd_rdd:RDD[Tuple3[String, String, JMap[String, Object]]]= QiXinSource.getQXMessageGeneralRDD(hiveContext,dt)
-    qx_mgd_rdd.coalesce(10,false).foreachPartition(itor=>sendLogToShence(b_qx_message_general_detail,dt,projectName,itor))
+    qx_mgd_rdd.coalesce(10,false).foreachPartition(itor=>sendLogToShence(accumulator,errorNums,b_qx_message_general_detail,dt,projectName,itor))
 
     //b_qx_message_igt_detail
     val qx_mid_rdd:RDD[Tuple3[String, String, JMap[String, Object]]]= QiXinSource.getQXMessageigtRDD(hiveContext,dt)
-    qx_mid_rdd.coalesce(10,false).foreachPartition(itor=>sendLogToShence(b_qx_message_igt_detail,dt,projectName,itor))
+    qx_mid_rdd.coalesce(10,false).foreachPartition(itor=>sendLogToShence(accumulator,errorNums,b_qx_message_igt_detail,dt,projectName,itor))
+    //发送报警
+    val nums=errorNums.localValue
+    if(nums>0){
+      val msg="qixin to shence by day error numbers is:"+nums
+      MessageSender.sendMsg(msg,Array(4097,3719,6021,1368))
+    }
     sparkContext.stop()
   }
 
@@ -75,7 +84,7 @@ object ShenCeQiXinAll {
     *
     * @param iterator
     */
-  def sendLogToShence(title:String,dt:String,projectName: String, iterator: Iterator[Tuple3[String, String, JMap[String, Object]]]): Unit = {
+  def sendLogToShence(accumulator: Accumulator[Long],errorNums:Accumulator[Long],title:String,dt:String,projectName: String, iterator: Iterator[Tuple3[String, String, JMap[String, Object]]]): Unit = {
     //初始化hdfs报错路径
     val qixin_error_log_dir:String= com.facishare.fhc.util.Context.shence_error_log_dir+"/"+title+"/"+dt+"/"
     val iAddress: InetAddress = InetAddress.getLocalHost
@@ -88,8 +97,10 @@ object ShenCeQiXinAll {
       val map = cep._3
       try {
         SendMsgToShence.writeLog(sa, cep._1, cep._2, map)
+        accumulator.add(1L)
       }catch{
-        case e:Throwable =>{
+        case e:Exception =>{
+          errorNums.add(1L)
           val outputStream=hlog.getOutPutStream()
           HDFSUtil.write2File(outputStream, map.toString+"errormsg:"+e.getMessage)
         }

@@ -6,11 +6,12 @@ import java.util.{Date, Map => JMap}
 
 import com.facishare.fhc.source.OpenApiSource
 import com.facishare.fhc.util.{HDFSLogFactory, HDFSUtil, SendMsgToShence}
+import com.facishare.fs.cloud.helper.msg.MessageSender
 import com.facishare.fs.cloud.helper.util.ParaJudge
 import com.sensorsdata.analytics.javasdk.SensorsAnalytics
 import org.apache.commons.lang.StringUtils
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{Accumulator, SparkConf, SparkContext}
 import org.apache.spark.sql.hive.HiveContext
 
 /**
@@ -45,7 +46,8 @@ object ShenCeOpenApiByDayMain {
     //配置spark conf
     val sparkConf = new SparkConf().setAppName("shence-etl-openapi").setMaster(runModel)
     val sparkContext = new SparkContext(sparkConf)
-    val accumulator = sparkContext.accumulator(0, "add-shence-nums")
+    val accumulator:Accumulator[Long] = sparkContext.accumulator(0, "add-shence-nums")
+    val errorNums:Accumulator[Long] = sparkContext.accumulator(0, "error-nums")
     val hiveContext: HiveContext = new HiveContext(sparkContext)
 
     //创建api
@@ -69,12 +71,16 @@ object ShenCeOpenApiByDayMain {
       map.put("openapi_interface", interface)
       map.put("openapi_action", "b_openapi_action")
       map.put("$time", new Date(_time.getTime))
-      accumulator.add(1)
       (eid.toString, "b_openapi_action", map)
     })
     println("partition num:"+openapirdd.getNumPartitions)
     //save to shence
-    openapirdd.foreachPartition(itor => sendLogToShence(dt)(itor))
+    openapirdd.foreachPartition(itor => sendLogToShence(accumulator,errorNums,dt)(itor))
+    val nums=errorNums.localValue
+    if(nums>0){
+      val msg="open api to shence by day error numbers is:"+nums
+      MessageSender.sendMsg(msg,Array(4097,3719,6021,1368))
+    }
     sparkContext.stop()
   }
 
@@ -83,7 +89,7 @@ object ShenCeOpenApiByDayMain {
     *
     * @param iterator
     */
-  def sendLogToShence(dt: String)(iterator: Iterator[Tuple3[String, String, JMap[String, Object]]]): Unit = {
+  def sendLogToShence(accumulator: Accumulator[Long],errorNums:Accumulator[Long],dt: String)(iterator: Iterator[Tuple3[String, String, JMap[String, Object]]]): Unit = {
     val openapi_shence_error_byday_dir: String = com.facishare.fhc.util.Context.shence_error_log_dir + "/" + "cep_shence_openapi_byday/" + dt
     val openapi_shece_error_byday_file: String = openapi_shence_error_byday_dir + "/cep_shence_openapi_byday_" + System.currentTimeMillis() + ".err"
     val hlog = HDFSLogFactory.getHDFSLog(openapi_shece_error_byday_file)
@@ -93,8 +99,10 @@ object ShenCeOpenApiByDayMain {
       val map = cep._3
       try {
         SendMsgToShence.writeLog(sa, cep._1, cep._2, map)
+        accumulator.add(1L)
       } catch {
         case error: Exception => {
+          errorNums.add(1L)
          val outputStream= hlog.getOutPutStream()
           HDFSUtil.write2File(outputStream, error.getMessage)
         }

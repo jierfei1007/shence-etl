@@ -6,12 +6,13 @@ import java.util.{Date, Map => JMap}
 
 import com.facishare.fhc.source.QiXinSource
 import com.facishare.fhc.util.{HDFSLogFactory, HDFSUtil, SendMsgToShence}
+import com.facishare.fs.cloud.helper.msg.MessageSender
 import com.facishare.fs.cloud.helper.util.ParaJudge
 import com.sensorsdata.analytics.javasdk.SensorsAnalytics
 import org.apache.commons.lang.StringUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.hive.HiveContext
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{Accumulator, SparkConf, SparkContext}
 
 /**
   * Created by jief on 2017/1/5.
@@ -44,23 +45,31 @@ object ShenceQiXinMain {
 
     val sparkConf = new SparkConf().setAppName("shence-etl-qixin").setMaster(runModel)
     val sparkContext = new SparkContext(sparkConf)
+    val accumulator:Accumulator[Long] = sparkContext.accumulator(0, "add-shence-nums")
+    val errorNums:Accumulator[Long] = sparkContext.accumulator(0, "error-nums")
     val hiveContext: HiveContext = new HiveContext(sparkContext)
 
     tableName match {
       case "b_qx_createsession_detail" | "b_qx_markread_session_detail" => {
         val df = QiXinSource.getQXCreateSessionDF(hiveContext, tableName, dt)
         val rdd: RDD[Tuple3[String, String, JMap[String, Object]]] = QiXinSource.getQXCreateSessionEventDF(df, tableName)
-        rdd.foreachPartition(itor => sendLogToShence(tableName, dt, projectName, itor))
+        rdd.foreachPartition(itor => sendLogToShence(accumulator,errorNums,tableName, dt, projectName, itor))
       }
       case "b_qx_message_general_detail" => {
         val rdd: RDD[Tuple3[String, String, JMap[String, Object]]] = QiXinSource.getQXMessageGeneralRDD(hiveContext, dt)
-        rdd.foreachPartition(itor => sendLogToShence(tableName, dt, projectName, itor))
+        rdd.foreachPartition(itor => sendLogToShence(accumulator,errorNums,tableName, dt, projectName, itor))
       }
       case "b_qx_message_igt_detail" => {
         val rdd: RDD[Tuple3[String, String, JMap[String, Object]]] = QiXinSource.getQXMessageigtRDD(hiveContext, dt)
-        rdd.foreachPartition(itor => sendLogToShence(tableName, dt, projectName, itor))
+        rdd.foreachPartition(itor => sendLogToShence(accumulator,errorNums,tableName, dt, projectName, itor))
       }
       case _ => throw new RuntimeException("no such event name")
+    }
+    //发送报警消息
+    val nums=errorNums.localValue
+    if(nums>0){
+      val msg="qixin to shence by hour error numbers is:"+nums
+      MessageSender.sendMsg(msg,Array(4097,3719,6021,1368))
     }
     sparkContext.stop()
   }
@@ -70,7 +79,7 @@ object ShenceQiXinMain {
     *
     * @param iterator
     */
-  def sendLogToShence(title: String, dt: String, projectName: String, iterator: Iterator[Tuple3[String, String, JMap[String, Object]]]): Unit = {
+  def sendLogToShence(accumulator: Accumulator[Long],errorNums:Accumulator[Long],title: String, dt: String, projectName: String, iterator: Iterator[Tuple3[String, String, JMap[String, Object]]]): Unit = {
     //初始化hdfs报错路径
     val qixin_error_log_dir: String = com.facishare.fhc.util.Context.shence_error_log_dir + "/" + title + "/" + dt + "/"
     val iAddress: InetAddress = InetAddress.getLocalHost
@@ -83,8 +92,10 @@ object ShenceQiXinMain {
       val map = cep._3
       try {
         SendMsgToShence.writeLog(sa, cep._1, cep._2, map)
+        accumulator.add(1L)
       } catch {
-        case e: Throwable => {
+        case e: Exception => {
+          errorNums.add(1L)
           val outputStream=hlog.getOutPutStream()
           HDFSUtil.write2File(outputStream, map.toString + "errormsg:" + e.getMessage)
         }
