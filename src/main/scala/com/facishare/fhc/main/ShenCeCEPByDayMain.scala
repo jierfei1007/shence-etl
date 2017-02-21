@@ -99,6 +99,9 @@ object ShenCeCEPByDayMain {
       if(action_value.contains(";")){
         action_value=action_value.replaceAll(";", "_3B_")
       }
+      if(StringUtils.isEmpty(action_value)){
+        action_value="CEP_"
+      }
       map.put("EventValue", action_value)
       map.put("Platform", platform.asInstanceOf[AnyRef])
       map.put("DeviceID", device_id)

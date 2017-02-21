@@ -5,7 +5,11 @@ import com.sensorsdata.analytics.javasdk.exceptions.InvalidArgumentException;
 
 import junit.framework.TestCase;
 
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -44,5 +48,79 @@ public class TestShence extends TestCase{
   public void test1(){
     String a="Thu Nov 17 16:51:40 CST 2016";
 
+  }
+
+  public void testvalid()throws Exception{
+   Map map= new HashMap();
+    map.put("$time",new Date());
+    map.put("EventValue","");
+    map.put("Platform",-10000);
+    map.put("DeviceID","");
+    map.put("IP","127.0.0.1");
+    map.put("Duration",-10000);
+    map.put("ProductVersion","");
+    map.put("$ip","127.0.0.1");
+    map.put("LastActionName","");
+    map.put("EnterpriseID",-10000);
+    map.put("FullAction","");
+    map.put("UserID",-10000);
+    map.put("ServiceType",-10000);
+    map.put("OSVersion","");
+    map.put("VersionName","");
+    map.put("BrowserVersion","");
+    map.put("SecondActionName","");
+    map.put("FullUserID",-10000);
+    map.put("Browser","");
+    map.put("FirstActionName","");
+   assertProperties("track",map);
+  }
+  private static void assertProperties(String eventType, Map<String, Object> properties) throws InvalidArgumentException {
+    if(null != properties) {
+      Iterator var3 = properties.entrySet().iterator();
+
+      while(var3.hasNext()) {
+        Map.Entry property = (Map.Entry)var3.next();
+        if(!(property.getValue() instanceof Number) && !(property.getValue() instanceof Date) && !(property.getValue() instanceof String) && !(property.getValue() instanceof Boolean) && !(property.getValue() instanceof List)) {
+          throw new InvalidArgumentException("-------------------The property value should be a basic type: Number, String, Date, Boolean, List<String>.");
+        }
+
+        if(((String)property.getKey()).equals("$time") && !(property.getValue() instanceof Date)) {
+          throw new InvalidArgumentException("The property value of key \'$time\' should be a java.util.Date type.");
+        }
+
+        if(property.getValue() instanceof List) {
+          ListIterator value = ((List)property.getValue()).listIterator();
+
+          while(value.hasNext()) {
+            Object element = value.next();
+            if(!(element instanceof String)) {
+              throw new InvalidArgumentException("+++++++++++++++++++The property value should be a basic type: Number, String, Date, Boolean, List<String>.");
+            }
+
+            if(((String)element).length() > 8191) {
+              value.set(((String)element).substring(0, 8191));
+              System.out.println(String.format("Element in property \'%s\' with LIST type is cut off while it\'s too long", new Object[]{(String)element}));
+            }
+          }
+        }
+
+        if(property.getValue() instanceof String) {
+          String value1 = (String)property.getValue();
+          if(value1.length() > 8191) {
+            property.setValue(value1.substring(0, 8191));
+            System.out.println(String.format("Property \'%s\' with STRING type is cut off while it\'s too long.", new Object[0], value1));
+          }
+        }
+
+        if(eventType.equals("profile_increment")) {
+          if(!(property.getValue() instanceof Number)) {
+            throw new InvalidArgumentException("The property value of PROFILE_INCREMENT should be a Number.");
+          }
+        } else if(eventType.equals("profile_append") && !(property.getValue() instanceof List)) {
+          throw new InvalidArgumentException("The property value of PROFILE_INCREMENT should be a List<String>.");
+        }
+      }
+
+    }
   }
 }

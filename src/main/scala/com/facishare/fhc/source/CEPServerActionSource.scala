@@ -13,7 +13,7 @@ object CEPServerActionSource {
 
   def getCEPServerActionDF(hiveContext:HiveContext,dt:String,hr:String):DataFrame={
     val sql="select " +
-      " `action`,"+
+      "  case when action is null then '' else action end as action ,"+
       "  case when platform is null then -10000 else platform end as platform,"+
       "  case when device_id is null or device_id='null' then '' else device_id end as device_id ,"+
       "  case when employee_ip is null or employee_ip='null' then '127.0.0.1' else employee_ip end as employee_ip,"+
@@ -35,7 +35,7 @@ object CEPServerActionSource {
 
   def getCEPServerActionDFByDay(hiveContext:HiveContext,dt:String):DataFrame={
     val sql="select " +
-      " `action`,"+
+      "  case when action is null then '' else action end as action,"+
       "  case when platform is null then -10000 else platform end as platform,"+
       "  case when device_id is null or device_id='null' then '' else device_id end as device_id ,"+
       "  case when employee_ip is null or employee_ip='null' then '127.0.0.1' else employee_ip end as employee_ip,"+
