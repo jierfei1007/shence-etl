@@ -80,12 +80,14 @@ class TestPredefine extends TestCase{
   }
 
   def test8(): Unit ={
-    val p1="^-?[0-9]\\d*$".r
-    println(p1.pattern.matcher("3234").matches())
-
-    val pattern = new Regex("^-?[0-9]\\d*$")
-    val p=Pattern.compile("^-?[0-9]\\d*$")
-    println(p.matcher("231").matches())
+    val p2="0|1|2".r
+    println(p2.pattern.matcher("2").matches())
+//    val p1="^-?[0-9]\\d*$".r
+//    println(p1.pattern.matcher("3234").matches())
+//
+//    val pattern = new Regex("^-?[0-9]\\d*$")
+//    val p=Pattern.compile("^-?[0-9]\\d*$")
+//    println(p.matcher("231").matches())
   }
 
   def test9(): Unit ={

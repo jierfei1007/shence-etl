@@ -1,23 +1,21 @@
 package com.facishare.fhc.main
 
 import java.net.InetAddress
-import java.text.SimpleDateFormat
 import java.util.{Date, Map => JMap}
 
-import com.facishare.fhc.source.QiXinSource
+import com.facishare.fhc.source.UserLoginSource
 import com.facishare.fhc.util.{HDFSLogFactory, HDFSUtil, SendMsgToShence}
 import com.facishare.fs.cloud.helper.msg.MessageSender
 import com.facishare.fs.cloud.helper.util.ParaJudge
 import com.sensorsdata.analytics.javasdk.SensorsAnalytics
 import org.apache.commons.lang.StringUtils
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.{Accumulator, SparkConf, SparkContext}
+import org.apache.spark.sql.hive.HiveContext
 
 /**
-  * Created by jief on 2017/1/5.
+  * Created by jief on 2017/2/23.
   */
-object ShenceQiXinMain {
+object ShenCeUserLoginByDayMain {
 
   def main(args: Array[String]): Unit = {
     /**
@@ -25,55 +23,50 @@ object ShenceQiXinMain {
       */
     val waringMsg = "XXX.jar \n" +
       " runMode(local,yarn-cluster) \n" +
-      " 20161220\n" +
-      " b_qx_createsession_detail \n"
-    val isExit = !ParaJudge.judge(args, 4, waringMsg)
+      " 20161220\n"+
+      " 0"
+    val isExit = !ParaJudge.judge(args, 3, waringMsg)
     //如果参数个数错误,则直接退出
     isExit match {
       case true => return
       case _ =>
     }
     val runModel = args(0)
-    val projectName = args(1)
-    val dt = args(2)
-    val tableName = args(3)
+    val dt = args(1)
+    val tables=args(2)
     //验证参数
-    assert(StringUtils.isNotBlank(runModel), "runMode(local,yarn-cluster) can not be blank!")
-    assert(StringUtils.isNotBlank(dt), "date can not be blank!")
-    require(StringUtils.isNotBlank(tableName), "tableName can not be blank!")
-    require(StringUtils.isNotBlank(projectName), "shence project name can not be blank!")
-
-    val sparkConf = new SparkConf().setAppName("shence-etl-qixin").setMaster(runModel)
+    assert(StringUtils.isNotBlank(runModel), "runMode(local,yarn-cluster) can not be blank")
+    assert(StringUtils.isNotBlank(dt), "date can not be blank")
+    assert(StringUtils.isNotBlank(tables) && "0|1|2".r.pattern.matcher(tables).matches(), "tables can not be blank 0:all table ,1:userLogin ,2:userLoginStatistic")
+    /**
+      * 从配置中心获取参数
+      */
+    //配置spark conf
+    val sparkConf = new SparkConf().setAppName("shence-etl-userLogin").setMaster(runModel)
     val sparkContext = new SparkContext(sparkConf)
     val accumulator:Accumulator[Long] = sparkContext.accumulator(0, "add-shence-nums")
     val errorNums:Accumulator[Long] = sparkContext.accumulator(0, "error-nums")
     val hiveContext: HiveContext = new HiveContext(sparkContext)
-
-    tableName match {
-      case "b_qx_createsession_detail" | "b_qx_markread_session_detail" => {
-        val df = QiXinSource.getQXCreateSessionDF(hiveContext, tableName, dt)
-        val rdd: RDD[Tuple3[String, String, JMap[String, Object]]] = QiXinSource.getQXCreateSessionEventDF(df, tableName)
-        rdd.foreachPartition(itor => sendLogToShence(accumulator,errorNums,tableName, dt, projectName, itor))
-      }
-      case "b_qx_message_general_detail" => {
-        val rdd: RDD[Tuple3[String, String, JMap[String, Object]]] = QiXinSource.getQXMessageGeneralRDD(hiveContext, dt)
-        rdd.foreachPartition(itor => sendLogToShence(accumulator,errorNums,tableName, dt, projectName, itor))
-      }
-      case "b_qx_message_igt_detail" => {
-        val rdd: RDD[Tuple3[String, String, JMap[String, Object]]] = QiXinSource.getQXMessageigtRDD(hiveContext, dt)
-        rdd.foreachPartition(itor => sendLogToShence(accumulator,errorNums,tableName, dt, projectName, itor))
-      }
-      case _ => throw new RuntimeException("no such event name")
+    if("0".equals(tables)) {
+      val userLoginRDD = UserLoginSource.getUserLoginDF(hiveContext, dt)
+      userLoginRDD.coalesce(12).foreachPartition(itor => sendLogToShence(accumulator, errorNums, "userLogin", dt, "default", itor))
+      val userLoginStatistic = UserLoginSource.getUserLoginStatic(hiveContext)
+      userLoginStatistic.foreachPartition(itor => sendLogToShence(accumulator, errorNums, "userLoginStatistic", dt, "default", itor))
+    }else if("1".equals(tables)){
+      val userLoginRDD = UserLoginSource.getUserLoginDF(hiveContext, dt)
+      userLoginRDD.coalesce(12).foreachPartition(itor => sendLogToShence(accumulator, errorNums, "userLogin", dt, "default", itor))
+    }else if("2".equals(tables)){
+      val userLoginStatistic = UserLoginSource.getUserLoginStatic(hiveContext)
+      userLoginStatistic.foreachPartition(itor => sendLogToShence(accumulator, errorNums, "userLoginStatistic", dt, "default", itor))
     }
-    //发送报警消息
     val nums=errorNums.localValue
     if(nums>0){
-      val msg="qixin to shence by hour error numbers is:"+nums+"\n"+"dt:"+dt
+      val msg = "userlogin to shence by day error numbers is:"+nums+"\n"+
+      "dt:"+dt
       MessageSender.sendMsg(msg,Array(4097,3719,6021,1368))
     }
     sparkContext.stop()
   }
-
   /**
     * 发送数据到神测服务
     *
@@ -105,4 +98,5 @@ object ShenceQiXinMain {
     sa.shutdown()
     hlog.close()
   }
+
 }

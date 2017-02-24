@@ -133,7 +133,7 @@ object ShenCeETLMain {
 
     val nums=errorNums.localValue
     if(nums>0){
-      val msg="cep to shence by hour error numbers is:"+nums
+      val msg="cep to shence by hour error numbers is:"+nums+"\n"+"dt:"+dt+",hr:"+hr
       MessageSender.sendMsg(msg,Array(4097,3719,6021,1368))
     }
     sparkContext.stop()
