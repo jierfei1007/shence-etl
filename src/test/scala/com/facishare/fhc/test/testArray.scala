@@ -5,6 +5,8 @@ import java.util
 import junit.framework.TestCase
 import java.util.{Date, Map => JMap}
 
+import org.apache.spark.rdd.JdbcPartition
+
 import scala.collection.JavaConversions._
 
 
@@ -76,6 +78,20 @@ class testArray extends TestCase{
     val map: JMap[String, Int] = Map("first" -> 1, "second" -> 2)
     map.foreach(kv =>{
       println(kv._1)
+    })
+  }
+
+  def testpartitions(): Unit ={
+    // bounds are inclusive, hence the + 1 here and - 1 on end
+    val upperBound=4
+    val lowerBound=0
+    val numPartitions=1
+    val length = BigInt(1) + upperBound - lowerBound
+    (0 until numPartitions).map(i => {
+      val start = lowerBound + ((i * length) / numPartitions)
+      val end = lowerBound + (((i + 1) * length) / numPartitions) - 1
+      println(s"$i,$start,$end")
+      (i, start.toLong, end.toLong)
     })
   }
 }

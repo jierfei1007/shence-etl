@@ -1,5 +1,7 @@
 package com.facishare.fhc.test
 
+import java.io.{BufferedReader, File, FileInputStream, InputStreamReader}
+
 import junit.framework.TestCase
 
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
@@ -183,4 +185,27 @@ class TestStr extends TestCase {
     referenceBuffer -="jief"
     referenceBuffer.foreach(println(_))
   }
+
+  def test16(): Unit ={
+    val params="20170303,12"
+    var sql="select * from a where dt='%s' and hr='%s'"
+
+    sql=sql.format()
+    println(sql)
+  }
+
+  def testReadFile(): Unit ={
+    val file = new File("D://财务留存.sql")
+    val inputStream=new FileInputStream(file)
+    val bufferReader = new BufferedReader(new InputStreamReader(inputStream))
+    var txt=""
+    var line:String=bufferReader.readLine()
+    while (line !=null) {
+      txt=txt+line+"\n"
+      line=bufferReader.readLine()
+    }
+    println(txt)
+    inputStream.close();
+  }
+
 }

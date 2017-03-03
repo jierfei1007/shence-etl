@@ -1,9 +1,12 @@
 package com.facishare.fhc.util
 
-import java.io.IOException
+import java.io.{BufferedReader, IOException, InputStreamReader}
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataOutputStream, FileSystem, Path}
+import org.apache.hadoop.hdfs.DistributedFileSystem
+
+import scala.collection.mutable.ListBuffer
 
 /**
   * Created by jief on 2016/12/22.
@@ -59,6 +62,30 @@ object HDFSUtil {
     }
     val fileOut: FSDataOutputStream = fs.append(path)
     fileOut
+  }
+
+  /**
+    * read text file
+    * @param uri hdfs path
+    * @return
+    */
+  def readHDFSTextFile(uri:String):String={
+    val fs = FileSystem.newInstance(new Configuration()).asInstanceOf[DistributedFileSystem]
+    val path=new Path(uri)
+    if (!fs.exists(path)){
+      throw new RuntimeException("path:"+path+"not exists")
+    }
+    val inputStream=fs.open(path,1024)
+    val bufferReader = new BufferedReader(new InputStreamReader(inputStream))
+    var txt=""
+    var line:String=bufferReader.readLine()
+    while (line!=null) {
+      txt=txt+line+"\n"
+      line=bufferReader.readLine()
+    }
+    inputStream.close()
+    fs.close()
+    txt
   }
 
   /**
