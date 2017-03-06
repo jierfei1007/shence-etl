@@ -101,6 +101,7 @@ object CommonToShenceBySQLMain {
     while (iterator.hasNext) {
       val cep = iterator.next()
       var map = cep._3
+      SendMsgToShence.translateProperty(map)
       try{
         SendMsgToShence.writeLog(sa,cep._1,cep._2,map)
         accumulator.add(1L)

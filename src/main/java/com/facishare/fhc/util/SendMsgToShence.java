@@ -121,19 +121,18 @@ public class SendMsgToShence {
       }
     }
   }
-
-  public static void translateOpenApi(Map<String, Object> data) {
-    data.put("$time", data.getOrDefault("Time",new Date()));
-    data.remove("Time");
-    String key;
-    Set<String> keySet = new HashSet();
-    keySet.addAll(data.keySet());
-    for (String ele : keySet) {
-      key = ele.toLowerCase();
-      if (shenceReservedWords.contains(key)) {
-        data.put("__" + ele, data.get(ele));
-        data.remove(ele);
-      }
+  /**
+   *<p>转化map中的一些特殊key</p>
+   * @param data
+   */
+  public static void translateProperty(Map<String, Object> data) {
+    if(data.get("time")!=null){
+      data.put("$time", data.get("time"));
+      data.remove("time");
+    }
+    if(data.get("ip")!=null){
+      data.put("$ip", data.get("ip"));
+      data.remove("ip");
     }
   }
 
