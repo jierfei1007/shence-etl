@@ -6,7 +6,6 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataOutputStream, FileSystem, Path}
 import org.apache.hadoop.hdfs.DistributedFileSystem
 
-import scala.collection.mutable.ListBuffer
 
 /**
   * Created by jief on 2016/12/22.

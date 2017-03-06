@@ -131,7 +131,7 @@ object ShenCeETLMain {
     println("partition num is="+cepServerActionBean.getNumPartitions)
     cepServerActionBean.coalesce(10,true).foreachPartition(itor => sendLogToShence(accumulator,errorNums,dt, hr)(itor))
 
-    val nums=errorNums.localValue
+    val nums=errorNums.value
     if(nums>0){
       val msg="cep to shence by hour error numbers is:"+nums+"\n"+"dt:"+dt+",hr:"+hr
       MessageSender.sendMsg(msg,Array(4097,3719,6021,1368))

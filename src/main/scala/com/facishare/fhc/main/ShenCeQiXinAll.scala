@@ -71,7 +71,7 @@ object ShenCeQiXinAll {
     val qx_mid_rdd:RDD[Tuple3[String, String, JMap[String, Object]]]= QiXinSource.getQXMessageigtRDD(hiveContext,dt)
     qx_mid_rdd.coalesce(10,false).foreachPartition(itor=>sendLogToShence(accumulator,errorNums,b_qx_message_igt_detail,dt,projectName,itor))
     //发送报警
-    val nums=errorNums.localValue
+    val nums=errorNums.value
     if(nums>0){
       val msg="qixin to shence by day error numbers is:"+nums+"\n"+"dt:"+dt
       MessageSender.sendMsg(msg,Array(4097,3719,6021,1368))

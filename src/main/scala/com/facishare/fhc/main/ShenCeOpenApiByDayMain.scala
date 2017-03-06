@@ -76,7 +76,7 @@ object ShenCeOpenApiByDayMain {
     println("partition num:"+openapirdd.getNumPartitions)
     //save to shence
     openapirdd.foreachPartition(itor => sendLogToShence(accumulator,errorNums,dt)(itor))
-    val nums=errorNums.localValue
+    val nums=errorNums.value
     if(nums>0){
       val msg="open api to shence by day error numbers is:"+nums+"\n"+"dt:"+dt
       MessageSender.sendMsg(msg,Array(4097,3719,6021,1368))

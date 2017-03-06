@@ -74,9 +74,14 @@ object CommonToShenceBySQLMain {
     val hiveContext: HiveContext = new HiveContext(sparkContext)
     val commonRDD:RDD[Tuple3[String, String, JMap[String, Object]]]=CommonSQLSource.createRecordTuple(hiveContext,sql,eventName,distinctIDName)
     commonRDD.foreachPartition(itor=>sendLogToShence(accumulator,errorNums,taskTitle,shenCeProject)(itor))
-    val nums=errorNums.localValue
+    val nums=errorNums.value
     if(nums>0){
-      val msg="cep to shence by day error numbers is:"+nums+"\n sql params:"+sqlParams
+      val msg=taskTitle+"by day error numbers is:"+nums+"\n sql params:"+sqlParams
+      MessageSender.sendMsg(msg,Array(4097,3719,6021,1368))
+    }
+    val oknums=accumulator.value
+    if(oknums < 10){
+      val msg=taskTitle+"by day add numbers is:"+oknums+"\n sql params:"+sqlParams+" please check!"
       MessageSender.sendMsg(msg,Array(4097,3719,6021,1368))
     }
     sparkContext.stop()

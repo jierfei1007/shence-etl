@@ -59,7 +59,7 @@ object ShenCeUserLoginByDayMain {
       val userLoginStatistic = UserLoginSource.getUserLoginStatic(hiveContext)
       userLoginStatistic.foreachPartition(itor => sendLogToShence(accumulator, errorNums, "userLoginStatistic", dt, "default", itor))
     }
-    val nums=errorNums.localValue
+    val nums=errorNums.value
     if(nums>0){
       val msg = "userlogin to shence by day error numbers is:"+nums+"\n"+
       "dt:"+dt
