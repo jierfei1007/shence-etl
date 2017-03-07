@@ -194,6 +194,19 @@ class TestStr extends TestCase {
     println(sql)
   }
 
+  def test17(): Unit ={
+
+    def logexec[T](f: => T): T ={
+      f
+    }
+
+    def run()=logexec{
+      println("hahaha")
+    }
+
+    run()
+
+  }
   def testReadFile(): Unit ={
     val file = new File("D://财务留存.sql")
     val inputStream=new FileInputStream(file)

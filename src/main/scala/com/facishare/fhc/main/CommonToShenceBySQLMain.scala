@@ -51,6 +51,9 @@ object CommonToShenceBySQLMain {
     //运行master
     val master=args(6)
     assert(StringUtils.isNotEmpty(master),"spark master can not be empty")
+    val partitions=args(7)
+    assert(StringUtils.isNotEmpty(partitions),"spark partitions can not be empty and it should be >0 ")
+    assert("^-?[1-9]\\d*$".r.pattern.matcher(partitions).matches(),"partitions should be match ^-?[1-9]\\d*$")
     //sql 脚本
     var sql=HDFSUtil.readHDFSTextFile(sqlFilePath)
     val params=sqlParams.split(",")
@@ -66,14 +69,17 @@ object CommonToShenceBySQLMain {
     }else{
       throw new RuntimeException("sql params split by ',' to  a array's length must leg 4 ")
     }
-
     val sparkConf = new SparkConf().setAppName(taskTitle).setMaster(master)
     val sparkContext = new SparkContext(sparkConf)
     val accumulator:Accumulator[Long] = sparkContext.accumulator(0, "add-shence-nums")
     val errorNums:Accumulator[Long] = sparkContext.accumulator(0, "error-nums")
     val hiveContext: HiveContext = new HiveContext(sparkContext)
     val commonRDD:RDD[Tuple3[String, String, JMap[String, Object]]]=CommonSQLSource.createRecordTuple(hiveContext,sql,eventName,distinctIDName)
-    commonRDD.foreachPartition(itor=>sendLogToShence(accumulator,errorNums,taskTitle,shenCeProject)(itor))
+    if(partitions.toInt>0){
+      commonRDD.coalesce(partitions.toInt).foreachPartition(itor=>sendLogToShence(accumulator,errorNums,taskTitle,shenCeProject)(itor))
+    }else{
+      commonRDD.foreachPartition(itor=>sendLogToShence(accumulator,errorNums,taskTitle,shenCeProject)(itor))
+    }
     val nums=errorNums.value
     if(nums>0){
       val msg=taskTitle+"by day error numbers is:"+nums+"\n sql params:"+sqlParams

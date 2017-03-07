@@ -60,7 +60,11 @@ object CommonSQLSource {
              }
            }
            if(field.name.equalsIgnoreCase(distinctIDName)){
-             distinctID=value.toString
+             if(null == value){
+               distinctID="-1000"
+             }else{
+               distinctID = value.toString
+             }
            }
            map.put(field.name,value)
          }
