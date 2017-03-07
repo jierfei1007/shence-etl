@@ -19,7 +19,7 @@ object CommonToShenceBySQLMain {
 
 
   def main(args: Array[String]): Unit = {
-    if(args.length<7){
+    if(args.length<9){
       throw new RuntimeException("args error !" +
         "spark-submit \n" +
         "--class com.facishare.fhc.main.CommonToShenceBySQLMain \n" +
@@ -27,8 +27,8 @@ object CommonToShenceBySQLMain {
         "--executor-memory 4G \n"+
         "--num-executors 20 \n "+
         "--master yarn-cluster \n"+
-        "hdfs:///JARS/fhc-shence/*.jar \n"+
-        "open-api enterprise_id hdfs:///user/tmp/open-api.sql 20170203,08 default openapitoshence yarn-cluster"
+        "hdfs:///JARS/fhc-shence/fhc-shence-etl-1.5-SNAPSHOT-jar-with-dependencies.jar \n"+
+        "open-api enterprise_id hdfs:///user/tmp/open-api.sql 20170203,08 default openapitoshence yarn-cluster 10 batch"
       )
     }
     //事件名称
@@ -54,6 +54,8 @@ object CommonToShenceBySQLMain {
     val partitions=args(7)
     assert(StringUtils.isNotEmpty(partitions),"spark partitions can not be empty and it should be >0 ")
     assert("^-?[1-9]\\d*$".r.pattern.matcher(partitions).matches(),"partitions should be match ^-?[1-9]\\d*$")
+    val consumer=args(8)
+    assert(StringUtils.isNotEmpty(consumer) && "batch|debug".r.pattern.matcher(consumer).matches() ,"consumer model can not be empty and it should be  batch or debug")
     //sql 脚本
     var sql=HDFSUtil.readHDFSTextFile(sqlFilePath)
     val params=sqlParams.split(",")
@@ -76,9 +78,9 @@ object CommonToShenceBySQLMain {
     val hiveContext: HiveContext = new HiveContext(sparkContext)
     val commonRDD:RDD[Tuple3[String, String, JMap[String, Object]]]=CommonSQLSource.createRecordTuple(hiveContext,sql,eventName,distinctIDName)
     if(partitions.toInt>0){
-      commonRDD.coalesce(partitions.toInt).foreachPartition(itor=>sendLogToShence(accumulator,errorNums,taskTitle,shenCeProject)(itor))
+      commonRDD.coalesce(partitions.toInt).foreachPartition(itor=>sendLogToShence(consumer,accumulator,errorNums,taskTitle,shenCeProject)(itor))
     }else{
-      commonRDD.foreachPartition(itor=>sendLogToShence(accumulator,errorNums,taskTitle,shenCeProject)(itor))
+      commonRDD.foreachPartition(itor=>sendLogToShence(consumer,accumulator,errorNums,taskTitle,shenCeProject)(itor))
     }
     val nums=errorNums.value
     if(nums>0){
@@ -96,14 +98,19 @@ object CommonToShenceBySQLMain {
     * 发送数据到神测服务
     * @param iterator
     */
-  def sendLogToShence(accumulator: Accumulator[Long],errorNums:Accumulator[Long],taskTitle:String,projectName:String)(iterator: Iterator[Tuple3[String,String,JMap[String,Object]]]): Unit ={
+  def sendLogToShence(consumerModel:String,accumulator: Accumulator[Long],errorNums:Accumulator[Long],taskTitle:String,projectName:String)(iterator: Iterator[Tuple3[String,String,JMap[String,Object]]]): Unit ={
     //初始化hdfs报错路径
     val cep_error_log_dir:String= com.facishare.fhc.util.Context.shence_error_log_dir+"/"+taskTitle+"/"
     val iAddress: InetAddress = InetAddress.getLocalHost
     val hostName: String = iAddress.getHostName
     val cep_error_log_file:String=cep_error_log_dir+taskTitle+"_"+hostName+"_"+System.currentTimeMillis()+".err"
     val hlog = HDFSLogFactory.getHDFSLog(cep_error_log_file)
-    val sa: SensorsAnalytics =SendMsgToShence.getSA(projectName)
+    var sa: SensorsAnalytics=null
+    if("batch".equals(consumerModel)){
+      sa =SendMsgToShence.getSA(projectName)
+    }else{
+      sa =SendMsgToShence.getDebugSA(projectName)
+    }
     while (iterator.hasNext) {
       val cep = iterator.next()
       var map = cep._3

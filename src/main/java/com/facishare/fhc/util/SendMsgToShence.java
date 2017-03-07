@@ -70,6 +70,21 @@ public class SendMsgToShence {
     return sa;
   }
 
+  /**
+   * <p>debug 调试模式</p>
+   * @param projectName
+   * @return
+   */
+  public static synchronized SensorsAnalytics getDebugSA(String projectName){
+    SensorsAnalytics sa=samap.get(projectName);
+    if(null==sa){
+      sa = new SensorsAnalytics(new SensorsAnalytics.DebugConsumer(sc_url+"?"+"project="+projectName, false));
+      samap.put(projectName,sa);
+      return sa;
+    }
+    return sa;
+  }
+
   public static void setProvInfo(){
     Connection conn;
     Statement stat;
