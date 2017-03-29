@@ -41,8 +41,10 @@ object CommonSQLSource {
                value=row.getAs(field.name).asInstanceOf[AnyRef]
              }
              case TimestampType =>{
-               val time=row.getAs[java.sql.Timestamp](field.name).getTime
-               value = new Date(time)
+               val time=row.getAs[java.sql.Timestamp](field.name)
+               if(time!=null){
+                 value = new Date(time.getTime)
+               }
              }
              case DateType=>{
                value=row.getAs[java.util.Date](field.name)

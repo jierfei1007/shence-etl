@@ -72,6 +72,7 @@ public class TestShence extends TestCase{
     map.put("FullUserID",-10000);
     map.put("Browser","");
     map.put("FirstActionName","");
+    map.put("param","{\"orientation\":\"portrait\"},https://www.fxiaoke.com/mob/salary/search.html?openUserId=FSUID_E4313DE2AE5D5D1141613B0F75B55B63&openCorpId=FSCID_2FF04BB9D5111A2E5713DAC38E0C873F&salaryDate=1480607999000&formType=577df790958a363a57ed5056&importId=58732b66e4b03d0d6d183665#/?_k=zzk1i8");
    assertProperties("track",map);
   }
   private static void assertProperties(String eventType, Map<String, Object> properties) throws InvalidArgumentException {

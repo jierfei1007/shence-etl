@@ -218,7 +218,18 @@ class TestStr extends TestCase {
       line=bufferReader.readLine()
     }
     println(txt)
-    inputStream.close();
+    inputStream.close()
   }
 
+
+  def testPinggai(): Unit ={
+    var pingzi=5
+    var gaizi=5
+    def huan(tuple2: Tuple2[Int,Int]):Tuple2[Int,Int]={
+
+
+     null
+    }
+
+  }
 }
