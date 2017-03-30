@@ -203,7 +203,6 @@ class TestStr extends TestCase {
     def run()=logexec{
       println("hahaha")
     }
-
     run()
 
   }
