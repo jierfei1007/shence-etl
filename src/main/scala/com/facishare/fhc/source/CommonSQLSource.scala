@@ -54,9 +54,7 @@ object CommonSQLSource {
              }
              case _ =>{
                value=row.getAs(field.name)
-               if(value==null){
-                 value=""
-               }else{
+               if(value!=null){
                  value=value.toString
                }
              }
@@ -68,7 +66,9 @@ object CommonSQLSource {
                distinctID = value.toString
              }
            }
-           map.put(field.name,value)
+           if(value!=null) {
+             map.put(field.name, value)
+           }
          }
          (distinctID,eventName,map)
        })

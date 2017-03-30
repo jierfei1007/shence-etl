@@ -128,7 +128,7 @@ object ShenCeCEPByDayMain {
 
     val nums=errorNums.value
     if(nums>0){
-      val msg="cep to shence by day error numbers is:"+nums+"\n dt:"+dt
+      val msg="[仓库数据入神测] \n cep to shence by day error numbers is:"+nums+"\n dt:"+dt+"\n"+ "[负责人: 武靖;纪二飞;王正坤;宫殿][发送人：武靖]"
       MessageSender.sendMsg(msg,Array(4097,3719,6021,1368))
     }
     sparkContext.stop()
