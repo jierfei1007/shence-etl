@@ -199,7 +199,6 @@ class TestStr extends TestCase {
     def logexec[T](f: => T): T ={
       f
     }
-
     def run()=logexec{
       println("hahaha")
     }
