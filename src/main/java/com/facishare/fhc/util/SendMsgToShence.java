@@ -171,7 +171,7 @@ public class SendMsgToShence {
     try {
     sa.track(distinct_id, eventName, jsonMap);
   }catch(Exception e){
-    throw new RuntimeException("writeLog error:"+jsonMap+"; errormsg="+e.getMessage());
+    throw new RuntimeException("errormsg="+e.getMessage());
   }
 }
 }

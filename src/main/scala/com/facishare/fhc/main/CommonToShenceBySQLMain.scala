@@ -84,14 +84,15 @@ object CommonToShenceBySQLMain {
     }
     val nums=errorNums.value
     if(nums>0){
-      val msg="[仓库数据入神测]\n appName:"+taskTitle+"\n errorNumbers:"+nums+"\n sqlparams:"+sqlParams+"\n"+
-      "[负责人: 武靖;纪二飞;王正坤;宫殿][发送人：武靖]"
-      MessageSender.sendMsg(msg,Array(4097,3719,6021,1368))
+      val msg="[仓库数据入神策]\n appName:"+taskTitle+"\n errorNumbers:"+nums+"\n sqlparams:"+sqlParams+"\n"+
+      "[负责人: 田春;魏磊;王杰朝;武靖;纪二飞;王正坤;宫殿;王海利;姚致远][发送人：武靖]"
+      MessageSender.sendMsg(msg,Array(4998,4097,3719,6021,1368,4686,5458))
     }
     val oknums=accumulator.value
     if(oknums < 10){
-      val msg=taskTitle+"by day add numbers is:"+oknums+"\n sql params:"+sqlParams+" please check!"
-      MessageSender.sendMsg(msg,Array(4097,3719,6021,1368))
+      val msg="[仓库数据入神策]\n appName:"+taskTitle+"\n by day add numbers is:"+oknums+"\n sqlparams:"+sqlParams+"\n"+
+        "[负责人: 田春;魏磊;王杰朝;武靖;纪二飞;王正坤;宫殿;王海利;姚致远][发送人：武靖]"
+      MessageSender.sendMsg(msg,Array(4998,4097,3719,6021,1368,4686,5458))
     }
     sparkContext.stop()
   }

@@ -17,6 +17,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.{Accumulator, SparkConf, SparkContext}
 
+import scala.collection.mutable.ArrayBuffer
 import scala.util.matching.Regex
 
 /**
@@ -56,8 +57,10 @@ object ShenCeCEPByDayMain {
 
     //获取cep server action DataFrame
     val cepDF = CEPServerActionSource.getCEPServerActionDFByDay(hiveContext, dt)
-    val cepServerActionBean: RDD[Tuple3[Int,String,JMap[String,Object]]] = cepDF.map(row => {
+    val cepServerActionBean: RDD[Tuple3[Int,String,JMap[String,Object]]] = cepDF.flatMap(row => {
+      val cep_array= ArrayBuffer[Tuple3[Int, String, JMap[String, Object]]]()
       val map= new util.HashMap[String,Object]()
+      val map2 = new util.HashMap[String, Object]()
       val action = row.getString(0)
       val platform = row.getInt(1)
       val device_id = row.getString(2)
@@ -121,14 +124,35 @@ object ShenCeCEPByDayMain {
       map.put("LastActionName",actions_tuple._4)
       map.put("VersionName",version_name)
       map.put("FullUserID",eid.toString+"_"+employee_id.toString)
-      (eid,action_value,map)
+      cep_array+=((eid,action_value,map))
+      map2.put("EventValue", "CEP")
+      map2.put("Platform", platform.asInstanceOf[AnyRef])
+      map2.put("DeviceID", device_id)
+      map2.put("IP", employee_ip)
+      map2.put("$time", new Date(visit_time.getTime))
+      map2.put("Duration", duration.asInstanceOf[AnyRef])
+      map2.put("ProductVersion", inner_pro_version)
+      map2.put("EnterpriseID", eid.asInstanceOf[AnyRef])
+      map2.put("UserID", employee_id.asInstanceOf[AnyRef])
+      map2.put("ServiceType", service_type.asInstanceOf[AnyRef])
+      map2.put("OSVersion", os_version)
+      map2.put("BrowserVersion", browser_version)
+      map2.put("Browser", browser)
+      map2.put("FullAction", action)
+      map2.put("FirstActionName", actions_tuple._2)
+      map2.put("SecondActionName", actions_tuple._3)
+      map2.put("LastActionName", actions_tuple._4)
+      map2.put("VersionName", version_name)
+      map2.put("FullUserID", eid.toString + "_" + employee_id.toString)
+      cep_array+=((eid,"CEP", map2))
+      cep_array
     })
     //save to shence
     cepServerActionBean.foreachPartition(itor=>sendLogToShence(accumulator,errorNums,dt)(itor))
 
     val nums=errorNums.value
     if(nums>0){
-      val msg="[仓库数据入神测] \n cep to shence by day error numbers is:"+nums+"\n dt:"+dt+"\n"+ "[负责人: 武靖;纪二飞;王正坤;宫殿][发送人：武靖]"
+      val msg="[仓库数据入神测] \n cep to shence by day error numbers is:"+nums+"\n dt:"+dt+"\n"+ "[负责人: 田春;魏磊;王杰朝;武靖;纪二飞;王正坤;王海利;姚致远][发送人：武靖]"
       MessageSender.sendMsg(msg,Array(4097,3719,6021,1368))
     }
     sparkContext.stop()
