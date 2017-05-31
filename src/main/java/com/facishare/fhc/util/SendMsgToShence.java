@@ -174,4 +174,18 @@ public class SendMsgToShence {
     throw new RuntimeException("errormsg="+e.getMessage());
   }
 }
+
+  /**
+   * 设置用户属性
+   * @param sa
+   * @param distinct_id
+   * @param jsonMap
+   */
+  public static void profileSet(SensorsAnalytics sa,String distinct_id,Map<String,Object> jsonMap){
+  try {
+    sa.profileSet(distinct_id, jsonMap);
+  }catch(Exception e){
+    throw new RuntimeException("errormsg="+e.getMessage());
+  }
+}
 }
