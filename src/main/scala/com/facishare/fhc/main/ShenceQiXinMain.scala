@@ -2,12 +2,14 @@ package com.facishare.fhc.main
 
 import java.net.InetAddress
 import java.text.SimpleDateFormat
+import java.util
 import java.util.{Date, Map => JMap}
 
 import com.facishare.fhc.source.QiXinSource
 import com.facishare.fhc.util.{HDFSLogFactory, HDFSUtil, SendMsgToShence}
 import com.facishare.fs.cloud.helper.msg.MessageSender
 import com.facishare.fs.cloud.helper.util.ParaJudge
+import com.fxiaoke.dataplatform.utils.alarm.ServiceNumAlarm
 import com.sensorsdata.analytics.javasdk.SensorsAnalytics
 import org.apache.commons.lang.StringUtils
 import org.apache.spark.rdd.RDD
@@ -50,7 +52,7 @@ object ShenceQiXinMain {
     val hiveContext: HiveContext = new HiveContext(sparkContext)
 
     tableName match {
-      case "b_qx_createsession_detail" | "b_qx_markread_session_detail" => {
+      case "b_qx_createsession_detail" | "b_qx_markread_session_detail"|"b_qx_session_set_detail" => {
         val df = QiXinSource.getQXCreateSessionDF(hiveContext, tableName, dt)
         val rdd: RDD[Tuple3[String, String, JMap[String, Object]]] = QiXinSource.getQXCreateSessionEventDF(df, tableName)
         rdd.foreachPartition(itor => sendLogToShence(accumulator,errorNums,tableName, dt, projectName, itor))
@@ -68,8 +70,11 @@ object ShenceQiXinMain {
     //发送报警消息
     val nums=errorNums.value
     if(nums>0){
-      val msg="[仓库数据入神测] \nqixin to shence by hour error numbers is:"+nums+"\n"+"dt:"+dt+"\n[负责人: 武靖;纪二飞;王正坤;宫殿][发送人：武靖]"
-      MessageSender.sendMsg(msg,Array(4097,3719,6021,1368))
+      val msg="[仓库数据入神测] \n事件类型：企信 \t 错误数:"+nums+"\n"+"日期:"+dt+"\n[负责人: 武靖;纪二飞;王正坤;宫殿][发送人：武靖]"
+      val list=List[String]("4998","4097","3719","6021","1368","4686","5458")
+      val Jlist=new util.ArrayList[String]()
+      list.foreach(e=>Jlist.add(e))
+      new ServiceNumAlarm().sendAlarm(msg.toString,"FSAID_5f5e554",Jlist)
     }
     sparkContext.stop()
   }

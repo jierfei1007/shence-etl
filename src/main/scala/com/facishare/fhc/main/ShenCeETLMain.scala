@@ -10,6 +10,7 @@ import com.facishare.fhc.source.CEPServerActionSource
 import com.facishare.fhc.util.{HDFSLogFactory, HDFSUtil, JsonUtil, SendMsgToShence}
 import com.facishare.fs.cloud.helper.msg.MessageSender
 import com.facishare.fs.cloud.helper.util.ParaJudge
+import com.fxiaoke.dataplatform.utils.alarm.ServiceNumAlarm
 import com.sensorsdata.analytics.javasdk.SensorsAnalytics
 import org.apache.commons.lang.StringUtils
 import org.apache.hadoop.fs.{FSDataOutputStream, FileSystem, Path}
@@ -63,7 +64,7 @@ object ShenCeETLMain {
     val cepDF = CEPServerActionSource.getCEPServerActionDF(hiveContext, dt, hr)
     val cepServerActionBean: RDD[Tuple3[String, String, JMap[String, Object]]] = cepDF.flatMap(row => {
       val cep_array= ArrayBuffer[Tuple3[String, String, JMap[String, Object]]]()
-      val map1 = new util.HashMap[String, Object]()
+//      val map1 = new util.HashMap[String, Object]()
       val map2 = new util.HashMap[String, Object]()
       val action = row.getString(0)
       val platform = row.getInt(1)
@@ -81,55 +82,55 @@ object ShenCeETLMain {
       val version_name = row.getString(14)
       val actions_tuple = getEventValue(action)
       //特殊字符用ascii码16进制符号替换
-      var action_value: String = actions_tuple._1
-      if (action_value.contains(".")) {
-        action_value = action_value.replaceAll("\\.", "_2E_")
-      }
-      if (action_value.contains("-")) {
-        action_value = action_value.replaceAll("-", "_2D_")
-      }
-      if (action_value.contains("?")) {
-        action_value = action_value.replaceAll("\\?", "_3F_")
-      }
-      if (action_value.contains("&")) {
-        action_value = action_value.replaceAll("\\&", "_26_")
-      }
-      if (action_value.contains("=")) {
-        action_value = action_value.replaceAll("=", "_3D_")
-      }
-      if (action_value.contains("!")) {
-        action_value = action_value.replaceAll("\\!", "_21_")
-      }
-      if (action_value.contains("#")) {
-        action_value = action_value.replaceAll("#", "_23_")
-      }
-      if (action_value.contains(";")) {
-        action_value = action_value.replaceAll(";", "_3B_")
-      }
-      if(StringUtils.isEmpty(action_value)){
-        action_value="CEP_"
-      }
-      map1.put("EventValue", action_value)
-      map1.put("Platform", platform.asInstanceOf[AnyRef])
-      map1.put("DeviceID", device_id)
-      map1.put("IP", employee_ip)
-      map1.put("$time", new Date(visit_time.getTime))
-      map1.put("Duration", duration.asInstanceOf[AnyRef])
-      map1.put("ProductVersion", inner_pro_version)
-      map1.put("EnterpriseID", eid.asInstanceOf[AnyRef])
-      map1.put("UserID", employee_id.asInstanceOf[AnyRef])
-      map1.put("ServiceType", service_type.asInstanceOf[AnyRef])
-      map1.put("OSVersion", os_version)
-      map1.put("BrowserVersion", browser_version)
-      map1.put("Browser", browser)
-      map1.put("FullAction", action)
-      map1.put("FirstActionName", actions_tuple._2)
-      map1.put("SecondActionName", actions_tuple._3)
-      map1.put("LastActionName", actions_tuple._4)
-      map1.put("VersionName", version_name)
-      map1.put("FullUserID", eid.toString + "_" + employee_id.toString)
-
-      cep_array+=((eid.toString, action_value, map1))
+//      var action_value: String = actions_tuple._1
+//      if (action_value.contains(".")) {
+//        action_value = action_value.replaceAll("\\.", "_2E_")
+//      }
+//      if (action_value.contains("-")) {
+//        action_value = action_value.replaceAll("-", "_2D_")
+//      }
+//      if (action_value.contains("?")) {
+//        action_value = action_value.replaceAll("\\?", "_3F_")
+//      }
+//      if (action_value.contains("&")) {
+//        action_value = action_value.replaceAll("\\&", "_26_")
+//      }
+//      if (action_value.contains("=")) {
+//        action_value = action_value.replaceAll("=", "_3D_")
+//      }
+//      if (action_value.contains("!")) {
+//        action_value = action_value.replaceAll("\\!", "_21_")
+//      }
+//      if (action_value.contains("#")) {
+//        action_value = action_value.replaceAll("#", "_23_")
+//      }
+//      if (action_value.contains(";")) {
+//        action_value = action_value.replaceAll(";", "_3B_")
+//      }
+//      if(StringUtils.isEmpty(action_value)){
+//        action_value="CEP_"
+//      }
+//      map1.put("EventValue", action_value)
+//      map1.put("Platform", platform.asInstanceOf[AnyRef])
+//      map1.put("DeviceID", device_id)
+//      map1.put("IP", employee_ip)
+//      map1.put("$time", new Date(visit_time.getTime))
+//      map1.put("Duration", duration.asInstanceOf[AnyRef])
+//      map1.put("ProductVersion", inner_pro_version)
+//      map1.put("EnterpriseID", eid.asInstanceOf[AnyRef])
+//      map1.put("UserID", employee_id.asInstanceOf[AnyRef])
+//      map1.put("ServiceType", service_type.asInstanceOf[AnyRef])
+//      map1.put("OSVersion", os_version)
+//      map1.put("BrowserVersion", browser_version)
+//      map1.put("Browser", browser)
+//      map1.put("FullAction", action)
+//      map1.put("FirstActionName", actions_tuple._2)
+//      map1.put("SecondActionName", actions_tuple._3)
+//      map1.put("LastActionName", actions_tuple._4)
+//      map1.put("VersionName", version_name)
+//      map1.put("FullUserID", eid.toString + "_" + employee_id.toString)
+//
+//      cep_array+=((eid.toString, action_value, map1))
 
       map2.put("EventValue", "CEP")
       map2.put("Platform", platform.asInstanceOf[AnyRef])
@@ -159,8 +160,12 @@ object ShenCeETLMain {
 
     val nums=errorNums.value
     if(nums>0){
-      val msg="[仓库数据入神测] \ncep to shence by hour error numbers is:"+nums+"\n"+"dt:"+dt+",hr:"+hr+"\n [负责人: 田春;魏磊;王杰朝;武靖;纪二飞;王正坤;王海利;姚致远][发送人：武靖]"
-      MessageSender.sendMsg(msg,Array(4998,4097,3719,6021,1368,4686,5458))
+      val msg="[仓库数据入神测] \n事件名称：CEP \n 错误数:"+nums+"\n"+"日期:"+dt+",小时:"+hr+"\n [负责人: 田春;魏磊;王杰朝;武靖;纪二飞;王正坤;王海利;姚致远][发送人：武靖]"
+//      MessageSender.sendMsg(msg,Array(4998,4097,3719,6021,1368,4686,5458))
+      val list=List[String]("4998","4097","3719","6021","1368","4686","5458")
+      val Jlist=new util.ArrayList[String]()
+      list.foreach(e=>Jlist.add(e))
+      new ServiceNumAlarm().sendAlarm(msg.toString,"FSAID_5f5e554",Jlist)
     }
     sparkContext.stop()
   }

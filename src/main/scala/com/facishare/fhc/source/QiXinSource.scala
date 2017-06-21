@@ -92,8 +92,11 @@ object QiXinSource {
       map.put("messageSourceType", message_source_type.asInstanceOf[AnyRef])
       map.put("sessionType", session_type)
       map.put("$time", new Date(create_session_time.getTime))
-
-      (enterprise_id.toString, eventName, map)
+      if("b_qx_session_set_detail".equalsIgnoreCase(eventName)) {
+        (enterprise_id.toString, "b_qx_createsession_detail", map)
+      }else{
+        (enterprise_id.toString, eventName, map)
+      }
     })
     qxCreateSessionEventrdd
   }

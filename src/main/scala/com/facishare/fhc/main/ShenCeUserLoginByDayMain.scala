@@ -1,12 +1,14 @@
 package com.facishare.fhc.main
 
 import java.net.InetAddress
+import java.util
 import java.util.{Date, Map => JMap}
 
 import com.facishare.fhc.source.UserLoginSource
 import com.facishare.fhc.util.{HDFSLogFactory, HDFSUtil, SendMsgToShence}
 import com.facishare.fs.cloud.helper.msg.MessageSender
 import com.facishare.fs.cloud.helper.util.ParaJudge
+import com.fxiaoke.dataplatform.utils.alarm.ServiceNumAlarm
 import com.sensorsdata.analytics.javasdk.SensorsAnalytics
 import org.apache.commons.lang.StringUtils
 import org.apache.spark.{Accumulator, SparkConf, SparkContext}
@@ -61,9 +63,12 @@ object ShenCeUserLoginByDayMain {
     }
     val nums=errorNums.value
     if(nums>0){
-      val msg = "[仓库数据入神测] \n userlogin to shence by day error numbers is:"+nums+"\n"+
-      "dt:"+dt+"\n[负责人: 武靖;纪二飞;王正坤;宫殿][发送人：武靖]"
-      MessageSender.sendMsg(msg,Array(4097,3719,6021,1368))
+      val msg = "[仓库数据入神测] \n 事件类型：用户登录 \t 错误数量:"+nums+"\n"+
+      "日期:"+dt+"\n[负责人: 武靖;纪二飞;王正坤;宫殿][发送人：武靖]"
+      val list=List[String]("4998","4097","3719","6021","1368","4686","5458")
+      val Jlist=new util.ArrayList[String]()
+      list.foreach(e=>Jlist.add(e))
+      new ServiceNumAlarm().sendAlarm(msg.toString,"FSAID_5f5e554",Jlist)
     }
     sparkContext.stop()
   }

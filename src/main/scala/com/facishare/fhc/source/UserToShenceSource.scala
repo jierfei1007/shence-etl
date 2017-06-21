@@ -23,6 +23,7 @@ object UserToShenceSource {
       """
         select
         A.Enterprise_id as Enterprise_id,
+        A.enterprise_account as enterprise_account,
         A.account_total_amount as account_total_amount,
         A.company_scale_desc as company_scale_desc,
         A.enterprise_city as enterprise_city,
@@ -55,6 +56,10 @@ object UserToShenceSource {
       val rdd:RDD[(String,JMap[String,Object])]=df.map(row=>{
         val map = new util.HashMap[String, Object]()
         val Enterprise_id= row.getAs[Int]("Enterprise_id").asInstanceOf[AnyRef]
+        val enterprise_account= row.getAs[String]("enterprise_account")
+        if(StringUtils.isNotEmpty(enterprise_account)) {
+          map.put("enterprise_account",enterprise_account)
+        }
         val account_total_amount= row.getAs[Int]("account_total_amount").asInstanceOf[AnyRef]
         if(account_total_amount!=null){
           map.put("account_total_amount",account_total_amount)

@@ -1,11 +1,13 @@
 package com.facishare.fhc.main
 
 import java.net.InetAddress
+import java.util
 import java.util.{Date, Map => JMap}
 
 import com.facishare.fhc.source.CommonSQLSource
 import com.facishare.fhc.util.{HDFSLogFactory, HDFSUtil, SendMsgToShence}
 import com.facishare.fs.cloud.helper.msg.MessageSender
+import com.fxiaoke.dataplatform.utils.alarm.ServiceNumAlarm
 import com.sensorsdata.analytics.javasdk.SensorsAnalytics
 import org.apache.commons.lang.StringUtils
 import org.apache.spark.rdd.RDD
@@ -86,13 +88,19 @@ object CommonToShenceBySQLMain {
     if(nums>0){
       val msg="[仓库数据入神策]\n appName:"+taskTitle+"\n errorNumbers:"+nums+"\n sqlparams:"+sqlParams+"\n"+
       "[负责人: 田春;魏磊;王杰朝;武靖;纪二飞;王正坤;宫殿;王海利;姚致远][发送人：武靖]"
-      MessageSender.sendMsg(msg,Array(4998,4097,3719,6021,1368,4686,5458))
+      val list=List[String]("4998","4097","3719","6021","1368","4686","5458")
+      val Jlist=new util.ArrayList[String]()
+      list.foreach(e=>Jlist.add(e))
+      new ServiceNumAlarm().sendAlarm(msg.toString,"FSAID_5f5e554",Jlist)
     }
     val oknums=accumulator.value
     if(oknums < 10){
       val msg="[仓库数据入神策]\n appName:"+taskTitle+"\n by day add numbers is:"+oknums+"\n sqlparams:"+sqlParams+"\n"+
         "[负责人: 田春;魏磊;王杰朝;武靖;纪二飞;王正坤;宫殿;王海利;姚致远][发送人：武靖]"
-      MessageSender.sendMsg(msg,Array(4998,4097,3719,6021,1368,4686,5458))
+      val list=List[String]("4998","4097","3719","6021","1368","4686","5458")
+      val Jlist=new util.ArrayList[String]()
+      list.foreach(e=>Jlist.add(e))
+      new ServiceNumAlarm().sendAlarm(msg.toString,"FSAID_5f5e554",Jlist)
     }
     sparkContext.stop()
   }
