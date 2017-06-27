@@ -67,31 +67,51 @@ object QiXinSource {
   def getQXCreateSessionEventDF(qxCreateSessionDF: DataFrame, eventName: String): RDD[Tuple3[String, String, JMap[String, Object]]] = {
     val qxCreateSessionEventrdd: RDD[Tuple3[String, String, JMap[String, Object]]] = qxCreateSessionDF.map(row => {
       val map = new util.HashMap[String, Object]()
-      val enterprise_id = row.getInt(0)
+      var enterprise_id = -1000
       val enterprise_account = row.getString(1)
-      val platform = row.getInt(2)
-      val employee_id = row.getInt(3)
-      val service_type = row.getInt(4)
-      val action = row.getString(5)
-      val inner_pro_version = row.getInt(6)
-      val message_id = row.getString(7)
-      val session_id = row.getString(8)
-      val message_source_type = row.getInt(9)
-      val session_type = row.getString(10)
-      val create_session_time = row.getTimestamp(11)
-
+      if(!row.isNullAt(2)) {
+        val platform = row.getInt(2)
+        map.put("Platform", platform.asInstanceOf[AnyRef])
+      }
+      if(!row.isNullAt(0) && !row.isNullAt(3)) {
+        enterprise_id = row.getInt(0)
+        val employee_id = row.getInt(3)
+        map.put("FullUserID", enterprise_id + "_" + employee_id)
+        map.put("UserID", employee_id.asInstanceOf[AnyRef])
+      }
+      if(!row.isNullAt(4)){
+        val service_type = row.getInt(4)
+        map.put("ServiceType", service_type.asInstanceOf[AnyRef])
+      }
+      if(!row.isNullAt(5)){
+        val action = row.getString(5)
+        map.put("FullAction", action)
+      }
+      if(!row.isNullAt(6)){
+        val inner_pro_version = row.getInt(6)
+        map.put("ProductVersion", inner_pro_version.toString)
+      }
+      if(!row.isNullAt(7)){
+        val message_id = row.getString(7)
+        map.put("messageId", message_id)
+      }
+      if(!row.isNullAt(8)){
+        val session_id = row.getString(8)
+        map.put("sessionId", session_id)
+      }
+      if(!row.isNullAt(9)){
+        val message_source_type = row.getInt(9)
+        map.put("messageSourceType", message_source_type.asInstanceOf[AnyRef])
+      }
+      if(!row.isNullAt(10)){
+        val session_type = row.getString(10)
+        map.put("sessionType", session_type)
+      }
+      if(!row.isNullAt(11)){
+        val create_session_time = row.getTimestamp(11)
+        map.put("$time", new Date(create_session_time.getTime))
+      }
       map.put("EnterpriseAccount", enterprise_account)
-      map.put("Platform", platform.asInstanceOf[AnyRef])
-      map.put("FullUserID", enterprise_id + "_" + employee_id)
-      map.put("UserID", employee_id.asInstanceOf[AnyRef])
-      map.put("ServiceType", service_type.asInstanceOf[AnyRef])
-      map.put("FullAction", action)
-      map.put("ProductVersion", inner_pro_version.toString)
-      map.put("messageId", message_id)
-      map.put("sessionId", session_id)
-      map.put("messageSourceType", message_source_type.asInstanceOf[AnyRef])
-      map.put("sessionType", session_type)
-      map.put("$time", new Date(create_session_time.getTime))
       if("b_qx_session_set_detail".equalsIgnoreCase(eventName)) {
         (enterprise_id.toString, "b_qx_createsession_detail", map)
       }else{
@@ -151,31 +171,52 @@ object QiXinSource {
       val map = new util.HashMap[String, Object]()
       val enterprise_id = row.getInt(0)
       val enterprise_account = row.getString(1)
-      val platform = row.getInt(2)
-      val employee_id = row.getInt(3)
-      val service_type = row.getInt(4)
-      val action = row.getString(5)
-      val inner_pro_version = row.getInt(6)
-      val message_id = row.getLong(7)
-      val session_id = row.getString(8)
-      val message_source_type = row.getInt(9)
-      val general_message_time = row.getTimestamp(10)
-      val message_type = row.getString(11)
-      val p_participant_num = row.getInt(12)
+      if(!row.isNullAt(2)){
+        val platform = row.getInt(2)
+        map.put("Platform", platform.asInstanceOf[AnyRef])
+      }
+      if(!row.isNullAt(3)){
+        val employee_id = row.getInt(3)
+        map.put("FullUserID", enterprise_id + "_" + employee_id)
+        map.put("UserID", employee_id.asInstanceOf[AnyRef])
+      }
+      if(!row.isNullAt(4)){
+        val service_type = row.getInt(4)
+        map.put("ServiceType", service_type.asInstanceOf[AnyRef])
+      }
+      if(!row.isNullAt(5)){
+        val action = row.getString(5)
+        map.put("FullAction", action)
+      }
+      if(!row.isNullAt(6)){
+        val inner_pro_version = row.getInt(6)
+        map.put("ProductVersion", inner_pro_version.toString)
+      }
+      if(!row.isNullAt(7)){
+        val message_id = row.getLong(7)
+        map.put("messageId", message_id.toString)
+      }
+      if(!row.isNullAt(8)){
+        val session_id = row.getString(8)
+        map.put("sessionId", session_id)
+      }
+      if(!row.isNullAt(9)){
+        val message_source_type = row.getInt(9)
+        map.put("messageSourceType", message_source_type.asInstanceOf[AnyRef])
+      }
+      if(!row.isNullAt(10)){
+        val general_message_time = row.getTimestamp(10)
+        map.put("$time", new Date(general_message_time.getTime))
+      }
+      if(!row.isNullAt(11)){
+        val message_type = row.getString(11)
+        map.put("messageType", message_type)
+      }
+      if(!row.isNullAt(12)){
+        val p_participant_num = row.getInt(12)
+        map.put("pParticipantNum", p_participant_num.asInstanceOf[AnyRef])
+      }
       map.put("EnterpriseAccount", enterprise_account)
-      map.put("Platform", platform.asInstanceOf[AnyRef])
-      map.put("FullUserID", enterprise_id + "_" + employee_id)
-      map.put("UserID", employee_id.asInstanceOf[AnyRef])
-      map.put("ServiceType", service_type.asInstanceOf[AnyRef])
-      map.put("FullAction", action)
-      map.put("ProductVersion", inner_pro_version.toString)
-      map.put("messageId", message_id.toString)
-      map.put("sessionId", session_id)
-      map.put("messageSourceType", message_source_type.asInstanceOf[AnyRef])
-      map.put("$time", new Date(general_message_time.getTime))
-      map.put("messageType", message_type)
-      map.put("pParticipantNum", p_participant_num.asInstanceOf[AnyRef])
-
       (enterprise_id.toString, "b_qx_message_general_detail", map)
     })
     QXMessageGeneralRDD
@@ -232,34 +273,56 @@ object QiXinSource {
       val map = new util.HashMap[String, Object]()
       val enterprise_id = row.getInt(0)
       val enterprise_account = row.getString(1)
-      val platform = row.getInt(2)
-      val employee_id = row.getInt(3)
-      val service_type = row.getInt(4)
-      val action = row.getString(5)
-      val inner_pro_version = row.getInt(6)
-      val message_id = row.getLong(7)
-      val session_id = row.getString(8)
-      val message_source_type = row.getInt(9)
-      val message_type = row.getString(10)
-      val igt_message_time = row.getTimestamp(11)
-      val p_workitem_type = row.getInt(12)
-      val p_feed_id = row.getLong(13)
-
+      if(!row.isNullAt(2)){
+        val platform = row.getInt(2)
+        map.put("Platform", platform.asInstanceOf[AnyRef])
+      }
+      if(!row.isNullAt(3)){
+        val employee_id = row.getInt(3)
+        map.put("FullUserID", enterprise_id + "_" + employee_id)
+        map.put("UserID", employee_id.asInstanceOf[AnyRef])
+      }
+      if(!row.isNullAt(4)){
+        val service_type = row.getInt(4)
+        map.put("ServiceType", service_type.asInstanceOf[AnyRef])
+      }
+      if(!row.isNullAt(5)){
+        val action = row.getString(5)
+        map.put("FullAction", action)
+      }
+      if(!row.isNullAt(6)){
+        val inner_pro_version = row.getInt(6)
+        map.put("ProductVersion", inner_pro_version.toString)
+      }
+      if(!row.isNullAt(7)){
+        val message_id = row.getLong(7)
+        map.put("messageId", message_id.toString)
+      }
+      if(!row.isNullAt(8)){
+        val session_id = row.getString(8)
+        map.put("sessionId", session_id)
+      }
+      if(!row.isNullAt(9)){
+        val message_source_type = row.getInt(9)
+        map.put("messageSourceType", message_source_type.asInstanceOf[AnyRef])
+      }
+      if(!row.isNullAt(10)){
+        val message_type = row.getString(10)
+        map.put("messageType", message_type)
+      }
+      if(!row.isNullAt(11)){
+        val igt_message_time = row.getTimestamp(11)
+        map.put("$time", new Date(igt_message_time.getTime))
+      }
+      if(!row.isNullAt(12)){
+        val p_workitem_type = row.getInt(12)
+        map.put("pWorkItemType", p_workitem_type.asInstanceOf[AnyRef])
+      }
+      if(!row.isNullAt(13)){
+        val p_feed_id = row.getLong(13)
+        map.put("pFeedId", p_feed_id.asInstanceOf[AnyRef])
+      }
       map.put("EnterpriseAccount", enterprise_account)
-      map.put("Platform", platform.asInstanceOf[AnyRef])
-      map.put("FullUserID", enterprise_id + "_" + employee_id)
-      map.put("UserID", employee_id.asInstanceOf[AnyRef])
-      map.put("ServiceType", service_type.asInstanceOf[AnyRef])
-      map.put("FullAction", action)
-      map.put("ProductVersion", inner_pro_version.toString)
-      map.put("messageId", message_id.toString)
-      map.put("sessionId", session_id)
-      map.put("messageSourceType", message_source_type.asInstanceOf[AnyRef])
-      map.put("messageType", message_type)
-      map.put("$time", new Date(igt_message_time.getTime))
-      map.put("pWorkItemType", p_workitem_type.asInstanceOf[AnyRef])
-      map.put("pFeedId", p_feed_id.asInstanceOf[AnyRef])
-
       (enterprise_id.toString, "b_qx_message_igt_detail", map)
     })
     QXMessageigtRDD

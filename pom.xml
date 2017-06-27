@@ -10,12 +10,18 @@
 
     <properties>
         <scala.version>2.10.5</scala.version>
+        <hbase.version>1.2.0-cdh5.7.0</hbase.version>
     </properties>
     <repositories>
         <repository>
             <id>scala-tools.org</id>
             <name>Scala-Tools Maven2 Repository</name>
             <url>http://scala-tools.org/repo-releases</url>
+        </repository>
+        <repository>
+            <id>cloudera-repos</id>
+            <name>Cloudera Repos</name>
+            <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
         </repository>
     </repositories>
 
@@ -35,6 +41,12 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_2.10</artifactId>
+            <version>1.6.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.11</version>
@@ -50,10 +62,34 @@
             <groupId>com.facishare.fs.cloud</groupId>
             <artifactId>fhc-spark-util</artifactId>
             <version>1.1-SNAPSHOT</version>
+            <!--<exclusions>-->
+                <!--<exclusion>-->
+                    <!--<groupId>org.apache.hbase</groupId>-->
+                    <!--<artifactId>hbase-client</artifactId>-->
+                <!--</exclusion>-->
+            <!--</exclusions>-->
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hbase</groupId>
+            <artifactId>hbase-client</artifactId>
+            <version>${hbase.version}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
-                    <groupId>org.apache.hbase</groupId>
-                    <artifactId>hbase-client</artifactId>
+                    <artifactId>guava</artifactId>
+                    <groupId>com.google.guava</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>commons-lang</artifactId>
+                    <groupId>commons-lang</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>commons-logging</artifactId>
+                    <groupId>commons-logging</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>commons-math3</artifactId>
+                    <groupId>org.apache.commons</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
