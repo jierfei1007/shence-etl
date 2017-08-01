@@ -33,7 +33,8 @@ object QiXinSource {
                     bqc.session_id as session_id,
                     bqc.message_source_type as message_source_type,
                     bqc.session_type as session_type,
-                    bqc.create_session_time as create_session_time
+                    bqc.create_session_time as create_session_time,
+                    bqc.env as env
               FROM
               (SELECT
                 case when enterprise_account is null or enterprise_account='' then '_default_' else enterprise_account end as enterprise_account,
@@ -46,7 +47,8 @@ object QiXinSource {
                 session_id,
                 message_source_type,
                 session_type,
-                create_session_time
+                create_session_time,
+                env
                 FROM dw_bds_b.%s where dt='%s')as bqc
               left join
               (SELECT distinct enterprise_id,enterprise_account
@@ -111,6 +113,9 @@ object QiXinSource {
         val create_session_time = row.getTimestamp(11)
         map.put("$time", new Date(create_session_time.getTime))
       }
+      if(!row.isNullAt(12)){
+        map.put("env",row.getInt(12).asInstanceOf[AnyRef])
+      }
       map.put("EnterpriseAccount", enterprise_account)
       if("b_qx_session_set_detail".equalsIgnoreCase(eventName)) {
         (enterprise_id.toString, "b_qx_createsession_detail", map)
@@ -143,7 +148,8 @@ object QiXinSource {
                     bqc.message_source_type as message_source_type,
                     bqc.general_message_time as general_message_time,
                     bqc.message_type as message_type,
-                    bqc.p_participant_num as p_participant_num
+                    bqc.p_participant_num as p_participant_num,
+                    bqc.env as env
               FROM
               (SELECT
                 case when enterprise_account is null or enterprise_account='' then '_default_' else enterprise_account end as enterprise_account,
@@ -157,7 +163,8 @@ object QiXinSource {
                 message_source_type,
                 general_message_time,
                 message_type,
-                p_participant_num
+                p_participant_num,
+                env
                 FROM dw_bds_b.b_qx_message_general_detail where dt='%s')as bqc
               left join
               (SELECT distinct enterprise_id,enterprise_account
@@ -216,6 +223,10 @@ object QiXinSource {
         val p_participant_num = row.getInt(12)
         map.put("pParticipantNum", p_participant_num.asInstanceOf[AnyRef])
       }
+      if(!row.isNullAt(13)){
+        val env = row.getInt(13)
+        map.put("env", env.asInstanceOf[AnyRef])
+      }
       map.put("EnterpriseAccount", enterprise_account)
       (enterprise_id.toString, "b_qx_message_general_detail", map)
     })
@@ -244,7 +255,8 @@ object QiXinSource {
                 bqc.message_type as message_type,
                 bqc.igt_message_time as igt_message_time,
                 bqc.p_workitem_type as p_workitem_type,
-                bqc.p_feed_id as p_feed_id
+                bqc.p_feed_id as p_feed_id,
+                bqc.env as env
               FROM
               (SELECT
                 case when enterprise_account is null or enterprise_account='' then '_default_' else enterprise_account end as enterprise_account,
@@ -259,7 +271,8 @@ object QiXinSource {
                 igt_message_time,
                 message_type,
                 p_workitem_type,
-                p_feed_id
+                p_feed_id,
+                env
                 FROM dw_bds_b.b_qx_message_igt_detail where dt='%s')as bqc
               left join
               (SELECT distinct enterprise_id,enterprise_account
@@ -321,6 +334,11 @@ object QiXinSource {
       if(!row.isNullAt(13)){
         val p_feed_id = row.getLong(13)
         map.put("pFeedId", p_feed_id.asInstanceOf[AnyRef])
+      }
+      //新加字段
+      if(!row.isNullAt(14)){
+        val env = row.getInt(14)
+        map.put("env", env.asInstanceOf[AnyRef])
       }
       map.put("EnterpriseAccount", enterprise_account)
       (enterprise_id.toString, "b_qx_message_igt_detail", map)

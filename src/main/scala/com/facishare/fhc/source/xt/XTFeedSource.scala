@@ -117,8 +117,8 @@ object XTFeedSource {
             map.put("p_xt_sendfeedreply_numeric_c",row.getInt(20).asInstanceOf[AnyRef])
           }
           getDataFromHbase(EnterpriseID+"-"+p_feed_id,table,map)
-//          list+=((EnterpriseID.toString,"b_xt_sendfeedreply_detail_v2",map))
-          list+=((EnterpriseID.toString,"b_xt_sendfeedreply_detail",map))
+          list+=((EnterpriseID.toString,"b_xt_sendfeedreply_detail_v2",map))
+//          list+=((EnterpriseID.toString,"b_xt_sendfeedreply_detail",map))
         }
         list.iterator
       })
@@ -183,8 +183,8 @@ object XTFeedSource {
         }
         map.put("p_feed_id",p_feed_id.asInstanceOf[AnyRef])
         getDataFromHbase(EnterpriseID+"-"+p_feed_id,table,map)
-        list+=((EnterpriseID.toString,"b_xt_sentreceipt_detail",map))
-//        list+=((EnterpriseID.toString,"b_xt_sentreceipt_detail_v2",map))
+//        list+=((EnterpriseID.toString,"b_xt_sentreceipt_detail",map))
+        list+=((EnterpriseID.toString,"b_xt_sentreceipt_detail_v2",map))
       }
       list.iterator
     })
@@ -265,8 +265,8 @@ object XTFeedSource {
         }
         map.put("p_feed_id",p_feed_id.asInstanceOf[AnyRef])
         getDataFromHbase(EnterpriseID+"-"+p_feed_id,table,map)
-        list+=((EnterpriseID.toString,"b_xt_feedlike_detail",map))
-//        list+=((EnterpriseID.toString,"b_xt_feedlike_detail_v2",map))
+//        list+=((EnterpriseID.toString,"b_xt_feedlike_detail",map))
+        list+=((EnterpriseID.toString,"b_xt_feedlike_detail_v2",map))
       }
       list.iterator
     })
@@ -310,7 +310,7 @@ object XTFeedSource {
         map.put("p_feed_type",new Integer(Bytes.toInt(cell_p_feed_type.getValueArray)))
       }
       if(null!=cell_p_feed_plan_type){
-        map.put("cell_p_feed_plan_type",new Integer(Bytes.toInt(cell_p_feed_plan_type.getValueArray)))
+        map.put("p_feed_plan_type",new Integer(Bytes.toInt(cell_p_feed_plan_type.getValueArray)))
       }
       if(null!=cell_p_feed_approve_type){
         map.put("p_feed_approve_type",new Integer(Bytes.toInt(cell_p_feed_approve_type.getValueArray)))

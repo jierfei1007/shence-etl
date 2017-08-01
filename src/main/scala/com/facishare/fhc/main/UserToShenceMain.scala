@@ -47,12 +47,13 @@ object UserToShenceMain {
     val accumulator:Accumulator[Long] = sparkContext.accumulator(0, "add-shence-nums")
     val errorNums:Accumulator[Long] = sparkContext.accumulator(0, "error-nums")
     val hiveContext: HiveContext = new HiveContext(sparkContext)
-    val user_info_RDD=UserToShenceSource.getUserInfoDF(hiveContext,run_dt)
+//    val user_info_RDD=UserToShenceSource.getUserInfoDF(hiveContext,run_dt)
+    val user_info_RDD=UserToShenceSource.getNewUserInfoDF(hiveContext)
     //save to shence
     user_info_RDD.repartition(20).foreachPartition(itor=>sendLogToShence(accumulator,errorNums,run_dt,"default",itor))
     val nums=errorNums.value
     if(nums>0){
-      val msg="[仓库数据入神测] \n 用户信息导入神测失败数量:"+nums+"\n 日期:"+run_dt+"\n"+ "[负责人: 田春;魏磊;王杰朝;武靖;纪二飞;王正坤;王海利;姚致远][发送人：武靖]"
+      val msg="[仓库数据入神测] \n 企业画像导入神测失败数量:"+nums+"\n 日期:"+run_dt+"\n"+ "[负责人: 田春;魏磊;王杰朝;武靖;纪二飞;王正坤;王海利;姚致远][发送人：武靖]"
       val list=List[String]("4998","4097","3719","6021","1368","4686","5458")
       val Jlist=new util.ArrayList[String]()
       list.foreach(e=>Jlist.add(e))
