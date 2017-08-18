@@ -7,6 +7,8 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.sql.types._
 
+import scala.collection.mutable
+
 /**
   * Created by jief on 2017/3/3.
   */
@@ -31,35 +33,43 @@ object CommonSQLSource {
        val commonRDD:RDD[Tuple3[String, String, JMap[String, Object]]]=commonDF.map(row=>{
          val map = new util.HashMap[String, Object]()
          var distinctID="-10000"
-         for(field <- fieldsArray){
+         for(index <- 0 until fieldsArray.length-1){
            var value:Object=null
-           field.dataType match {
-             case StringType=>{
-               value=row.getAs[String](field.name)
+           fieldsArray(index).dataType.typeName match {
+             case "string" =>{
+               if(!row.isNullAt(index)) {
+                 value = row.getString(index)
+               }
              }
-             case IntegerType | LongType | DoubleType | FloatType | ShortType =>{
-               value=row.getAs(field.name).asInstanceOf[AnyRef]
+             case "integer" | "long" | "double" | "float" | "short" =>{
+               value=row.getAs(fieldsArray(index).name).asInstanceOf[AnyRef]
              }
-             case TimestampType =>{
-               val time=row.getAs[java.sql.Timestamp](field.name)
+             case "decimal"=>{value=row.getAs[Decimal](fieldsArray(index).name).asInstanceOf[AnyRef]}
+             case "timestamp" =>{
+               val time=row.getAs[java.sql.Timestamp](fieldsArray(index).name)
                if(time!=null){
                  value = new Date(time.getTime)
                }
              }
-             case DateType=>{
-               value=row.getAs[java.util.Date](field.name)
+             case "date" =>{
+               if(!row.isNullAt(index)){
+                 value=row.getDate(index)
+               }
              }
-             case BooleanType=>{
-               value=row.getAs[Boolean](field.name).asInstanceOf[AnyRef]
+             case "boolean" =>{value=row.getAs[Boolean](fieldsArray(index).name).asInstanceOf[AnyRef]}
+             case "array" =>{
+               if(!row.isNullAt(index)){
+                 value = row.getList(index)
+               }
              }
              case _ =>{
-               value=row.getAs(field.name)
+               value=row.getAs(fieldsArray(index).name)
                if(value!=null){
                  value=value.toString
                }
              }
            }
-           if(field.name.equalsIgnoreCase(distinctIDName)){
+           if(fieldsArray(index).name.equalsIgnoreCase(distinctIDName)){
              if(null == value){
                distinctID="-1000"
              }else{
@@ -67,7 +77,7 @@ object CommonSQLSource {
              }
            }
            if(value!=null) {
-             map.put(field.name, value)
+             map.put(fieldsArray(index).name, value)
            }
          }
          (distinctID,eventName,map)

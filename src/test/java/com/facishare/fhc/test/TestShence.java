@@ -1,10 +1,16 @@
 package com.facishare.fhc.test;
 
+import com.google.common.collect.Lists;
+
+import com.facishare.fhc.util.SendMsgToShence;
 import com.sensorsdata.analytics.javasdk.SensorsAnalytics;
 import com.sensorsdata.analytics.javasdk.exceptions.InvalidArgumentException;
 
 import junit.framework.TestCase;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -51,29 +57,20 @@ public class TestShence extends TestCase{
   }
 
   public void testvalid()throws Exception{
-   Map map= new HashMap();
-    map.put("$time",new Date());
-    map.put("EventValue","");
-    map.put("Platform",-10000);
-    map.put("DeviceID","");
-    map.put("IP","127.0.0.1");
-    map.put("Duration",-10000);
-    map.put("ProductVersion","");
-    map.put("$ip","127.0.0.1");
-    map.put("LastActionName","");
-    map.put("EnterpriseID",-10000);
-    map.put("FullAction","");
-    map.put("UserID",-10000);
-    map.put("ServiceType",-10000);
-    map.put("OSVersion","");
-    map.put("VersionName","");
-    map.put("BrowserVersion","");
-    map.put("SecondActionName","");
-    map.put("FullUserID",-10000);
-    map.put("Browser","");
-    map.put("FirstActionName","");
-    map.put("param","{\"orientation\":\"portrait\"},https://www.fxiaoke.com/mob/salary/search.html?openUserId=FSUID_E4313DE2AE5D5D1141613B0F75B55B63&openCorpId=FSCID_2FF04BB9D5111A2E5713DAC38E0C873F&salaryDate=1480607999000&formType=577df790958a363a57ed5056&importId=58732b66e4b03d0d6d183665#/?_k=zzk1i8");
-   assertProperties("track",map);
+    DateFormat df= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+    Map map= new HashMap<String,Object>();
+    map.put("EnterpriseID",259335);
+    map.put("image_text_param_id","2a4a474f07834aedb7a7abdfed2d4730");
+    map.put("upstream_fs_ea","259335");
+    map.put("sender","E.259335.1077");
+    map.put("app_id","FSAID_11490c83");
+    map.put("down_stream_users",new String[]{"E.543193.1000","E.424259.1061","E.fktest.4115","E.543193.1002","E.421080.1006","E.545931.1000","E.543277.1000","E.543193.1001","E.fktest.4352","E.543806.1000","E.421080.1002","E.421080.1001","E.421080.1000","E.424259.1056","E.fktest.1801","E.424259.1010","E.543193.1003","E.557197.1000","E.543163.1001","E.543163.1000","E.545024.1000","E.543161.1000","E.fktest.6601","E.fktest.4500","E.fktest.6600","E.543159.1000","E.fktest.1350","E.543164.1000","E.421080.1035","E.424259.1002","E.421080.1032","E.424259.1000","E.fktest.1796","E.543265.1001","E.543265.1000","E.424259.1009","E.543276.1000","E.424259.1004","E.555707.1000","E.540477.1000","E.545787.1000","E.545734.1000","E.fktest.2353","E.543803.1000","E.fktest.6599","E.fktest.6598","E.fktest.6597","E.fktest.2351","E.fktest.5187","E.424259.1030","E.516270.1001","E.543160.1000","E.554353.1000","E.544777.1000","E.543160.1001","E.516270.1003","E.544777.1001","E.556589.1000","E.543439.1000","E.516270.1000","E.fktest.1811","E.543162.1003","E.fktest.5737","E.543165.1000","E.fktest.5931","E.547686.1000"});
+    map.put("$ip","172.17.32.157");
+    map.put("messageId","d008e342-0eaf-4dfc-b6b5-3cac55063ab7");
+    map.put("$time",df.parse("2017-08-16 17:42:07.33"));
+    map.put("upstream_user_ids",Lists.newArrayList());
+    System.out.println(map.toString());
+    assertProperties("track",map);
   }
   private static void assertProperties(String eventType, Map<String, Object> properties) throws InvalidArgumentException {
     if(null != properties) {
@@ -123,5 +120,23 @@ public class TestShence extends TestCase{
       }
 
     }
+  }
+
+  public void testSendToShence()throws Exception{
+    DateFormat df= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+    Map map= new HashMap<String,Object>();
+    map.put("EnterpriseID",259335);
+    map.put("image_text_param_id","2a4a474f07834aedb7a7abdfed2d4730");
+    map.put("upstream_fs_ea","259335");
+    map.put("sender","E.259335.1077");
+    map.put("app_id","FSAID_11490c83");
+    map.put("down_stream_users", Lists.newArrayList("E.543193.1000","E.424259.1061","E.fktest.4115","E.543193.1002","E.421080.1006","E.545931.1000","E.543277.1000","E.543193.1001","E.fktest.4352","E.543806.1000","E.421080.1002","E.421080.1001","E.421080.1000","E.424259.1056","E.fktest.1801","E.424259.1010","E.543193.1003","E.557197.1000","E.543163.1001","E.543163.1000","E.545024.1000","E.543161.1000","E.fktest.6601","E.fktest.4500","E.fktest.6600","E.543159.1000","E.fktest.1350","E.543164.1000","E.421080.1035","E.424259.1002","E.421080.1032","E.424259.1000","E.fktest.1796","E.543265.1001","E.543265.1000","E.424259.1009","E.543276.1000","E.424259.1004","E.555707.1000","E.540477.1000","E.545787.1000","E.545734.1000","E.fktest.2353","E.543803.1000","E.fktest.6599","E.fktest.6598","E.fktest.6597","E.fktest.2351","E.fktest.5187","E.424259.1030","E.516270.1001","E.543160.1000","E.554353.1000","E.544777.1000","E.543160.1001","E.516270.1003","E.544777.1001","E.556589.1000","E.543439.1000","E.516270.1000","E.fktest.1811","E.543162.1003","E.fktest.5737","E.543165.1000","E.fktest.5931","E.547686.1000"));
+    map.put("$ip","172.17.32.157");
+    map.put("messageId","d008e342-0eaf-4dfc-b6b5-3cac55063ab7");
+    map.put("$time",df.parse("2017-08-16 17:42:07.33"));
+    map.put("upstream_user_ids",Lists.newArrayList("1024","1025","1026","1027","1038","1039","1040","1043","1045","1046","1048","1049","1050","1051","1052","1053","1054","1055","1058","1059","1061","1062","1066","1067","1068","1069","1070","1071","1072","1073","1074","1075","1077","1081","1082","1083","1084","1085","1088","1089","1090","1092","1093","1096","1098","1099","1101","1102","1103","1106","1107","1113","1114","1115","1116","1117","1118","1119","1120","1121","1122","1123","1124","1000","1001","1002","1003","1004","1005","1006","1007","1011","1014","1015","1016","1019","1020","1021","1023"));
+    SensorsAnalytics sa = new SensorsAnalytics(new SensorsAnalytics.BatchConsumer("http://sasdata.foneshare.cn/sa?"+"project=default", 1));
+    sa.track("259335", "b_el_send_notice_daily", map);
+    sa.flush();
   }
 }
