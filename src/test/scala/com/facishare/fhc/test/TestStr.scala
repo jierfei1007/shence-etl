@@ -230,4 +230,11 @@ class TestStr extends TestCase {
     }
 
   }
+
+  def testarrayLength(): Unit ={
+    val array= Array(1,2,3,4,5,6,7,8,9,10)
+    for(index <-0 until array.length){
+      println(array(index))
+    }
+  }
 }
