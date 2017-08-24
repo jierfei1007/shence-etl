@@ -139,4 +139,16 @@ public class TestShence extends TestCase{
     sa.track("259335", "b_el_send_notice_daily", map);
     sa.flush();
   }
+
+
+  public void testcrmSendToShence()throws Exception{
+    DateFormat df= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+    Map map= new HashMap<String,Object>();
+    map.put("EnterpriseID",100204);
+    map.put("$time",df.parse("2017-08-16 00:00:00.000"));
+    map.put("crm_active_weekly","是");
+    SensorsAnalytics sa = new SensorsAnalytics(new SensorsAnalytics.BatchConsumer("http://sasdata.foneshare.cn/sa?"+"project=default", 1));
+    sa.track("100204", "crm_activity_weekly", map);
+    sa.flush();
+  }
 }

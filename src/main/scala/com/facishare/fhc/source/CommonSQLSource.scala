@@ -33,7 +33,7 @@ object CommonSQLSource {
        val commonRDD:RDD[Tuple3[String, String, JMap[String, Object]]]=commonDF.map(row=>{
          val map = new util.HashMap[String, Object]()
          var distinctID="-10000"
-         for(index <- 0 until fieldsArray.length){
+         for(index <- fieldsArray.indices){
            var value:Object=null
            fieldsArray(index).dataType.typeName match {
              case "string" =>{
@@ -41,7 +41,7 @@ object CommonSQLSource {
                  value = row.getString(index)
                }
              }
-             case "integer" | "long" | "double" | "float" | "short" =>{
+             case "int"| "integer" | "long" | "double" | "float" | "short" =>{
                value=row.getAs(fieldsArray(index).name).asInstanceOf[AnyRef]
              }
              case "decimal"=>{value=row.getAs[Decimal](fieldsArray(index).name).asInstanceOf[AnyRef]}

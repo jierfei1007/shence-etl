@@ -56,8 +56,13 @@ class TestPredefine extends TestCase{
   }
 
   def test4(): Unit ={
-    val a=(1,2,3,4,5)
-    println(a._1)
+    val a=Array(1,2,3,4,5)
+    for( i <- 0 until(a.length)){
+      println(i)
+    }
+    for( i <- a.indices){
+      println(i)
+    }
   }
 
   def test5(): Unit ={
