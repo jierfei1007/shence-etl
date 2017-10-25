@@ -125,8 +125,8 @@ class testArray extends TestCase {
 
   def testDeleteUserInfo(): Unit = {
     val sa = new SensorsAnalytics(new SensorsAnalytics.BatchConsumer("http://sasdata.foneshare.cn/sa?project=default", 100))
-    sa.profileDelete("1593f42c5861ff-0d79c1d4c9a12e-6337037f-2073600-1593f42c5882b8")
-    sa.profileDelete("15949d2c6d312a-0c5a8d3c8cabca-1d326f50-2073600-15949d2c6d6189")
+    sa.profileDelete("1593f42c5861ff-0d79c1d4c9a12e-6337037f-2073600-1593f42c5882b8", false)
+    sa.profileDelete("15949d2c6d312a-0c5a8d3c8cabca-1d326f50-2073600-15949d2c6d6189", false)
     sa.flush()
     sa.shutdown()
   }

@@ -155,7 +155,7 @@ public class SendMsgToShence {
     String distinct_id = jsonMap.getOrDefault("openapi_enterprise_id","0").toString();
     String eventName = jsonMap.getOrDefault("openapi_action", "click").toString();
     try {
-      sa.track(distinct_id, eventName, jsonMap);
+      sa.track(distinct_id,false,eventName, jsonMap);
     }catch(Exception e){
       throw new RuntimeException("writeLog error:"+jsonMap+"; errormsg="+e.getMessage());
     }
@@ -169,7 +169,7 @@ public class SendMsgToShence {
    */
   public static void writeLog(SensorsAnalytics sa,String distinct_id,String eventName,Map<String,Object> jsonMap){
     try {
-    sa.track(distinct_id, eventName, jsonMap);
+    sa.track(distinct_id,false,eventName, jsonMap);
   }catch(Exception e){
     throw new RuntimeException("errormsg="+e.getMessage());
   }
@@ -183,7 +183,7 @@ public class SendMsgToShence {
    */
   public static void profileSet(SensorsAnalytics sa,String distinct_id,Map<String,Object> jsonMap){
   try {
-    sa.profileSet(distinct_id, jsonMap);
+    sa.profileSet(distinct_id,false, jsonMap);
   }catch(Exception e){
     throw new RuntimeException("errormsg="+e.getMessage());
   }

@@ -237,4 +237,8 @@ class TestStr extends TestCase {
       println(array(index))
     }
   }
+
+  def testDate(): Unit ={
+    println(new java.util.Date())
+  }
 }

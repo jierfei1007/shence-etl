@@ -50,7 +50,7 @@ object TestSendToShence {
     map.put("action","")
     val sa: SensorsAnalytics = new SensorsAnalytics(new SensorsAnalytics.BatchConsumer("http://sasdata.foneshare.cn/sa?project=default", 10))
     try
-      sa.track("66190", "b_user_login_cgi", map)
+      sa.track("66190",false, "b_user_login_cgi", map)
     catch {
       case e: Exception => {
         e.printStackTrace()

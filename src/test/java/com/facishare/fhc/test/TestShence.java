@@ -39,7 +39,7 @@ public class TestShence extends TestCase{
 
     Map<String,Object> map=new HashMap<String,Object>();
     // 记录用户登录事件
-    sa.track(distinctId, "UserLogin" ,map);
+    sa.track(distinctId,true,"UserLogin" ,map);
     // 程序结束前，停止 Sensors Analytics SDK 所有服务
     sa.shutdown();
   }
@@ -60,13 +60,13 @@ public class TestShence extends TestCase{
     DateFormat df= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     Map map= new HashMap<String,Object>();
     map.put("EnterpriseID",259335);
-    map.put("image_text_param_id","2a4a474f07834aedb7a7abdfed2d4730");
-    map.put("upstream_fs_ea","259335");
-    map.put("sender","E.259335.1077");
-    map.put("app_id","FSAID_11490c83");
-    map.put("down_stream_users",new String[]{"E.543193.1000","E.424259.1061","E.fktest.4115","E.543193.1002","E.421080.1006","E.545931.1000","E.543277.1000","E.543193.1001","E.fktest.4352","E.543806.1000","E.421080.1002","E.421080.1001","E.421080.1000","E.424259.1056","E.fktest.1801","E.424259.1010","E.543193.1003","E.557197.1000","E.543163.1001","E.543163.1000","E.545024.1000","E.543161.1000","E.fktest.6601","E.fktest.4500","E.fktest.6600","E.543159.1000","E.fktest.1350","E.543164.1000","E.421080.1035","E.424259.1002","E.421080.1032","E.424259.1000","E.fktest.1796","E.543265.1001","E.543265.1000","E.424259.1009","E.543276.1000","E.424259.1004","E.555707.1000","E.540477.1000","E.545787.1000","E.545734.1000","E.fktest.2353","E.543803.1000","E.fktest.6599","E.fktest.6598","E.fktest.6597","E.fktest.2351","E.fktest.5187","E.424259.1030","E.516270.1001","E.543160.1000","E.554353.1000","E.544777.1000","E.543160.1001","E.516270.1003","E.544777.1001","E.556589.1000","E.543439.1000","E.516270.1000","E.fktest.1811","E.543162.1003","E.fktest.5737","E.543165.1000","E.fktest.5931","E.547686.1000"});
-    map.put("$ip","172.17.32.157");
-    map.put("messageId","d008e342-0eaf-4dfc-b6b5-3cac55063ab7");
+    map.put("actionid","WorkPage_LeftNav_SelectFeedTask");
+    map.put("httpxforwardedfor","259335");
+//    map.put("sender","E.259335.1077");
+//    map.put("app_id","FSAID_11490c83");
+//    map.put("down_stream_users","");
+//    map.put("$ip","172.17.32.157");
+    map.put("user_agent","Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 UBrowser/6.2.3637.220 Safari/537.36");
     map.put("$time",df.parse("2017-08-16 17:42:07.33"));
     map.put("upstream_user_ids",Lists.newArrayList());
     System.out.println(map.toString());
@@ -136,19 +136,21 @@ public class TestShence extends TestCase{
     map.put("$time",df.parse("2017-08-16 17:42:07.33"));
     map.put("upstream_user_ids",Lists.newArrayList("1024","1025","1026","1027","1038","1039","1040","1043","1045","1046","1048","1049","1050","1051","1052","1053","1054","1055","1058","1059","1061","1062","1066","1067","1068","1069","1070","1071","1072","1073","1074","1075","1077","1081","1082","1083","1084","1085","1088","1089","1090","1092","1093","1096","1098","1099","1101","1102","1103","1106","1107","1113","1114","1115","1116","1117","1118","1119","1120","1121","1122","1123","1124","1000","1001","1002","1003","1004","1005","1006","1007","1011","1014","1015","1016","1019","1020","1021","1023"));
     SensorsAnalytics sa = new SensorsAnalytics(new SensorsAnalytics.BatchConsumer("http://sasdata.foneshare.cn/sa?"+"project=default", 1));
-    sa.track("259335", "b_el_send_notice_daily", map);
+    sa.track("259335",true, "b_el_send_notice_daily", map);
     sa.flush();
   }
 
 
   public void testcrmSendToShence()throws Exception{
-    DateFormat df= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-    Map map= new HashMap<String,Object>();
-    map.put("EnterpriseID",100204);
-    map.put("$time",df.parse("2017-08-16 00:00:00.000"));
-    map.put("crm_active_weekly","是");
-    SensorsAnalytics sa = new SensorsAnalytics(new SensorsAnalytics.BatchConsumer("http://sasdata.foneshare.cn/sa?"+"project=default", 1));
-    sa.track("100204", "crm_activity_weekly", map);
-    sa.flush();
+//    DateFormat df= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+//    Map map= new HashMap<String,Object>();
+//    map.put("_fcompanyid","405093");
+//    map.put("$time",df.parse("2017-10-24 18:00:00.000"));
+//    map.put("Value","test");
+//    map.put("actionid","xhrerror");
+//    SensorsAnalytics sa = new SensorsAnalytics(new SensorsAnalytics.BatchConsumer("http://sasdata.foneshare.cn/sa?"+"project=default", 1));
+//    sa.track("405093",true ,"desktop_qx", map);
+//    sa.flush();
+     System.out.println(Integer.MAX_VALUE);
   }
 }
