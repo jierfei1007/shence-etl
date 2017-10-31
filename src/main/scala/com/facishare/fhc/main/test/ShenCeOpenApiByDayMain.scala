@@ -73,7 +73,7 @@ object ShenCeOpenApiByDayMain {
       (eid.toString, "b_openapi_action", map)
     })
     //save to shence
-    openapirdd.foreachPartition(itor => sendLogToShence(dt)(itor))
+    openapirdd.repartition(10).foreachPartition(itor => sendLogToShence(dt)(itor))
     sparkContext.stop()
   }
 

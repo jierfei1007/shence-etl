@@ -76,7 +76,7 @@ object ShenCeOpenApiByDayMain {
     })
     println("partition num:"+openapirdd.getNumPartitions)
     //save to shence
-    openapirdd.foreachPartition(itor => sendLogToShence(accumulator,errorNums,dt)(itor))
+    openapirdd.repartition(10).foreachPartition(itor => sendLogToShence(accumulator,errorNums,dt)(itor))
     val nums=errorNums.value
     if(nums>0){
       val msg="[仓库数据入神测] \n事件类型:open api \t 错误数:"+nums+"\n"+"日期:"+dt+"\n[负责人: 武靖;纪二飞;王正坤;宫殿][发送人：武靖]"
