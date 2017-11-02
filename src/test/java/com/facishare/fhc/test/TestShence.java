@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -135,7 +136,7 @@ public class TestShence extends TestCase{
     map.put("messageId","d008e342-0eaf-4dfc-b6b5-3cac55063ab7");
     map.put("$time",df.parse("2017-08-16 17:42:07.33")); //必填
     map.put("upstream_user_ids",Lists.newArrayList("1024","1025","1026","1027","1038","1039","1040","1043","1045","1046","1048","1049","1050","1051","1052","1053","1054","1055","1058","1059","1061","1062","1066","1067","1068","1069","1070","1071","1072","1073","1074","1075","1077","1081","1082","1083","1084","1085","1088","1089","1090","1092","1093","1096","1098","1099","1101","1102","1103","1106","1107","1113","1114","1115","1116","1117","1118","1119","1120","1121","1122","1123","1124","1000","1001","1002","1003","1004","1005","1006","1007","1011","1014","1015","1016","1019","1020","1021","1023"));
-    SensorsAnalytics sa = new SensorsAnalytics(new SensorsAnalytics.BatchConsumer("http://sasdata.foneshare.cn/sa?"+"project=default", 1));
+    SensorsAnalytics sa = new SensorsAnalytics(new SensorsAnalytics.BatchConsumer("http://sasdata.foneshare.cn/sa?"+"project=default", 100));
     sa.track("{企业id}",false, "{事件名}", map);
     sa.flush();
   }
@@ -152,5 +153,16 @@ public class TestShence extends TestCase{
 //    sa.track("405093",true ,"desktop_qx", map);
 //    sa.flush();
      System.out.println(Integer.MAX_VALUE);
+  }
+
+  public void testregx()throws Exception {
+    Pattern p= Pattern.compile("(E)(\\.[0-9 a-z A-Z]+\\.)(\\d+)");
+    Matcher matcher= p.matcher("E.bjdqsd.1065");
+    if(matcher.matches()){
+      System.out.println(matcher.group(1));
+      System.out.println(matcher.group(2));
+      System.out.println(matcher.group(3));
+    }
+
   }
 }

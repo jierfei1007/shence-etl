@@ -245,6 +245,9 @@ object UserToShenceSource {
       if(!row.isNullAt(24)){
         map.put("huiju_order_prd",row.getString(24))
       }
+      if(!row.isNullAt(25)){
+        map.put("crm_industry_desc",row.getString(25))
+      }
       (Enterprise_id.toString,map)
     })
     rdd
