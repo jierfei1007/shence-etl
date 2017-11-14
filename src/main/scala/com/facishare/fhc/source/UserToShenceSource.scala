@@ -248,6 +248,17 @@ object UserToShenceSource {
       if(!row.isNullAt(25)){
         map.put("crm_industry_desc",row.getString(25))
       }
+      if(!row.isNullAt(26)){
+        map.put("crm_active_monthly",row.getString(26))
+      }
+      //周流失
+      if(!row.isNullAt(27)){
+        map.put("crm_active_lost_weekly",row.getString(27))
+      }
+      //月流失
+      if(!row.isNullAt(28)){
+        map.put("crm_active_lost_monthly",row.getString(28))
+      }
       (Enterprise_id.toString,map)
     })
     rdd
