@@ -144,6 +144,9 @@ public class SendMsgToShence {
     if(data.get("time")!=null){
       data.put("$time", data.get("time"));
       data.remove("time");
+    }else if(data.get("create_time")!=null){
+      data.put("$time", data.get("create_time"));
+      data.remove("create_time");
     }
     if(data.get("ip")!=null){
       data.put("$ip", data.get("ip"));

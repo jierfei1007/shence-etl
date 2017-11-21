@@ -3,6 +3,7 @@ package com.facishare.fhc.test
 import java.io.{BufferedReader, File, FileInputStream, InputStreamReader}
 
 import junit.framework.TestCase
+import org.apache.spark.rdd.JdbcRDD
 
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.util.matching.Regex
@@ -228,6 +229,8 @@ class TestStr extends TestCase {
 
      null
     }
+
+//    val a:org.apache.spark.sql.execution.datasources.jdbc.JDBCRDD
 
   }
 

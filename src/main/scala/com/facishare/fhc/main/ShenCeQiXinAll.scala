@@ -28,7 +28,7 @@ object ShenCeQiXinAll {
       " runMode(local,yarn-cluster) \n" +
       " 20161220\n" +
       " b_qx_createsession_detail \n"
-    val isExit = !ParaJudge.judge(args, 3, waringMsg)
+    val isExit = !ParaJudge.judge(args, 4, waringMsg)
     //如果参数个数错误,则直接退出
     isExit match {
       case true => return
@@ -37,11 +37,13 @@ object ShenCeQiXinAll {
     val runModel = args(0)
     val projectName = args(1)
     val dt = args(2)
+    val event_name=args(3)
 
     //验证参数
     assert(StringUtils.isNotBlank(runModel), "runMode(local,yarn-cluster) can not be blank!")
     assert(StringUtils.isNotBlank(dt), "date can not be blank!")
     require(StringUtils.isNotBlank(projectName), "shence project name can not be blank!")
+    require(StringUtils.isNotBlank(event_name), "event name can not be blank !")
 
     val b_qx_createsession_detail="b_qx_createsession_detail"
     val b_qx_session_set_detail="b_qx_session_set_detail"
@@ -55,28 +57,58 @@ object ShenCeQiXinAll {
     val errorNums:Accumulator[Long] = sparkContext.accumulator(0, "error-nums")
     val hiveContext: HiveContext = new HiveContext(sparkContext)
 
-    //b_qx_createsession_detail
-
-    val qx_csd_df = QiXinSource.getQXCreateSessionDF(hiveContext, b_qx_createsession_detail, dt)
-    val qx_csd_rdd: RDD[Tuple3[String, String, JMap[String, Object]]] = QiXinSource.getQXCreateSessionEventDF(qx_csd_df, b_qx_createsession_detail)
-    qx_csd_rdd.coalesce(10,false).foreachPartition(itor => sendLogToShence(accumulator,errorNums,b_qx_createsession_detail,dt,projectName, itor))
-    //b_qx_session_set_detail
-    val qx_ssd_df = QiXinSource.getQXCreateSessionDF(hiveContext, b_qx_session_set_detail, dt)
-    //由于b_qx_session_set_detail 为新加事件所以此表中的数据也用b_qx_createsession_detail事件名称发送到神策
-    val qx_ssd_rdd: RDD[Tuple3[String, String, JMap[String, Object]]] = QiXinSource.getQXCreateSessionEventDF(qx_ssd_df, b_qx_createsession_detail)
-    qx_ssd_rdd.coalesce(10,false).foreachPartition(itor => sendLogToShence(accumulator,errorNums,b_qx_session_set_detail,dt,projectName, itor))
-    //b_qx_markread_session_detail
-    val qx_msd_df = QiXinSource.getQXCreateSessionDF(hiveContext, b_qx_createsession_detail, dt)
-    val qx_msd_rdd: RDD[Tuple3[String, String, JMap[String, Object]]] = QiXinSource.getQXCreateSessionEventDF(qx_msd_df, b_qx_markread_session_detail)
-    qx_msd_rdd.coalesce(10,false).foreachPartition(itor => sendLogToShence(accumulator,errorNums,b_qx_markread_session_detail,dt,projectName, itor))
-
-    //b_qx_message_general_detail
-    val qx_mgd_rdd:RDD[Tuple3[String, String, JMap[String, Object]]]= QiXinSource.getQXMessageGeneralRDD(hiveContext,dt)
-    qx_mgd_rdd.coalesce(10,false).foreachPartition(itor=>sendLogToShence(accumulator,errorNums,b_qx_message_general_detail,dt,projectName,itor))
-
-    //b_qx_message_igt_detail
-    val qx_mid_rdd:RDD[Tuple3[String, String, JMap[String, Object]]]= QiXinSource.getQXMessageigtRDD(hiveContext,dt)
-    qx_mid_rdd.coalesce(10,false).foreachPartition(itor=>sendLogToShence(accumulator,errorNums,b_qx_message_igt_detail,dt,projectName,itor))
+    event_name match {
+      case "b_qx_createsession_detail" =>{
+        //b_qx_createsession_detail
+        val qx_csd_df = QiXinSource.getQXCreateSessionDF(hiveContext, b_qx_createsession_detail, dt)
+        val qx_csd_rdd: RDD[Tuple3[String, String, JMap[String, Object]]] = QiXinSource.getQXCreateSessionEventDF(qx_csd_df, b_qx_createsession_detail)
+        qx_csd_rdd.coalesce(10).foreachPartition(itor => sendLogToShence(accumulator,errorNums,b_qx_createsession_detail,dt,projectName, itor))
+      }
+      case "b_qx_session_set_detail"=>{
+        //b_qx_session_set_detail
+        val qx_ssd_df = QiXinSource.getQXCreateSessionDF(hiveContext, b_qx_session_set_detail, dt)
+        //由于b_qx_session_set_detail 为新加事件所以此表中的数据也用b_qx_createsession_detail事件名称发送到神策
+        val qx_ssd_rdd: RDD[Tuple3[String, String, JMap[String, Object]]] = QiXinSource.getQXCreateSessionEventDF(qx_ssd_df, b_qx_createsession_detail)
+        qx_ssd_rdd.coalesce(10).foreachPartition(itor => sendLogToShence(accumulator,errorNums,b_qx_session_set_detail,dt,projectName, itor))
+      }
+      case "b_qx_markread_session_detail"=>{
+        //b_qx_markread_session_detail
+        val qx_msd_df = QiXinSource.getQXCreateSessionDF(hiveContext, b_qx_createsession_detail, dt)
+        val qx_msd_rdd: RDD[Tuple3[String, String, JMap[String, Object]]] = QiXinSource.getQXCreateSessionEventDF(qx_msd_df, b_qx_markread_session_detail)
+        qx_msd_rdd.coalesce(10).foreachPartition(itor => sendLogToShence(accumulator,errorNums,b_qx_markread_session_detail,dt,projectName, itor))
+      }
+      case "b_qx_message_general_detail"=>{
+        //b_qx_message_general_detail
+        val qx_mgd_rdd:RDD[Tuple3[String, String, JMap[String, Object]]]= QiXinSource.getQXMessageGeneralRDD(hiveContext,dt)
+        qx_mgd_rdd.coalesce(10).foreachPartition(itor=>sendLogToShence(accumulator,errorNums,b_qx_message_general_detail,dt,projectName,itor))
+      }
+      case "b_qx_message_igt_detail"=>{
+        //b_qx_message_igt_detail
+        val qx_mid_rdd:RDD[Tuple3[String, String, JMap[String, Object]]]= QiXinSource.getQXMessageigtRDD(hiveContext,dt)
+        qx_mid_rdd.coalesce(10).foreachPartition(itor=>sendLogToShence(accumulator,errorNums,b_qx_message_igt_detail,dt,projectName,itor))
+      }
+      case _=>{
+        //b_qx_createsession_detail
+        val qx_csd_df = QiXinSource.getQXCreateSessionDF(hiveContext, b_qx_createsession_detail, dt)
+        val qx_csd_rdd: RDD[Tuple3[String, String, JMap[String, Object]]] = QiXinSource.getQXCreateSessionEventDF(qx_csd_df, b_qx_createsession_detail)
+        qx_csd_rdd.coalesce(10).foreachPartition(itor => sendLogToShence(accumulator,errorNums,b_qx_createsession_detail,dt,projectName, itor))
+        //b_qx_session_set_detail
+        val qx_ssd_df = QiXinSource.getQXCreateSessionDF(hiveContext, b_qx_session_set_detail, dt)
+        //由于b_qx_session_set_detail 为新加事件所以此表中的数据也用b_qx_createsession_detail事件名称发送到神策
+        val qx_ssd_rdd: RDD[Tuple3[String, String, JMap[String, Object]]] = QiXinSource.getQXCreateSessionEventDF(qx_ssd_df, b_qx_createsession_detail)
+        qx_ssd_rdd.coalesce(10).foreachPartition(itor => sendLogToShence(accumulator,errorNums,b_qx_session_set_detail,dt,projectName, itor))
+        //b_qx_markread_session_detail
+        val qx_msd_df = QiXinSource.getQXCreateSessionDF(hiveContext, b_qx_createsession_detail, dt)
+        val qx_msd_rdd: RDD[Tuple3[String, String, JMap[String, Object]]] = QiXinSource.getQXCreateSessionEventDF(qx_msd_df, b_qx_markread_session_detail)
+        qx_msd_rdd.coalesce(10).foreachPartition(itor => sendLogToShence(accumulator,errorNums,b_qx_markread_session_detail,dt,projectName, itor))
+        //b_qx_message_general_detail
+        val qx_mgd_rdd:RDD[Tuple3[String, String, JMap[String, Object]]]= QiXinSource.getQXMessageGeneralRDD(hiveContext,dt)
+        qx_mgd_rdd.coalesce(10).foreachPartition(itor=>sendLogToShence(accumulator,errorNums,b_qx_message_general_detail,dt,projectName,itor))
+        //b_qx_message_igt_detail
+        val qx_mid_rdd:RDD[Tuple3[String, String, JMap[String, Object]]]= QiXinSource.getQXMessageigtRDD(hiveContext,dt)
+        qx_mid_rdd.coalesce(10).foreachPartition(itor=>sendLogToShence(accumulator,errorNums,b_qx_message_igt_detail,dt,projectName,itor))
+      }
+    }
     //发送报警
     val nums=errorNums.value
     if(nums>0){

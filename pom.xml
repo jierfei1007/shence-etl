@@ -6,7 +6,7 @@
 
     <groupId>com.facishare.fhc</groupId>
     <artifactId>fhc-shence-etl</artifactId>
-    <version>1.7-SNAPSHOT</version>
+    <version>1.8-SNAPSHOT</version>
 
     <properties>
         <scala.version>2.10.5</scala.version>
@@ -111,6 +111,12 @@
             <!--<artifactId>mysql-connector-java</artifactId>-->
             <!--<version>5.1.18</version>-->
         <!--</dependency>-->
+        <dependency>
+            <groupId>postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>9.1-901.jdbc4</version>
+        </dependency>
+
         <dependency>
             <groupId>com.microsoft</groupId>
             <artifactId>sqlserver-driver</artifactId>
